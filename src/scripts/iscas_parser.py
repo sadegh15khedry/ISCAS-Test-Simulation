@@ -219,3 +219,4 @@ def parse_iscas(file_path):
 
     return circuit
 
+

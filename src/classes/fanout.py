@@ -11,3 +11,6 @@ class Fanout:
         print(f"  Fanout ID: {self.id}")
         print(f"    Input: {input_conn_name}")
         print(f"    Outputs: {', '.join(output_conn_names)}\n")
+
+
+
