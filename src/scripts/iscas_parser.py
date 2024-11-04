@@ -1,65 +1,79 @@
-def parse_iscas_netlist(file_path):
+import re
+from gate import Gate
+from circuit import Circuit
+
+def parse_iscas(file_path):
     """
-    Parses an ISCAS netlist file and returns a dictionary representation of the circuit.
+    Parses a custom ISCAS netlist file and returns a Circuit object.
 
     Parameters:
         file_path (str): The path to the ISCAS netlist file.
 
     Returns:
-        dict: A dictionary with keys 'inputs', 'outputs', and 'gates'. 'inputs' and 'outputs' are lists
-              of signal names. 'gates' is a dictionary where each key is a gate name and each value is
-              a dictionary with keys 'type' and 'inputs'.
+        Circuit: An instance of the Circuit class containing gates, inputs, and outputs.
     """
-    import re
-
     inputs = []
     outputs = []
-    gates = {}
-
-    # Regular expressions for parsing
-    input_re = re.compile(r'^INPUT\((\w+)\)')
-    output_re = re.compile(r'^OUTPUT\((\w+)\)')
-    gate_re = re.compile(r'^(\w+)\s*=\s*(\w+)\((.*)\)')
+    gates = []
+    gate_dict = {}
+    current_gate = None
 
     with open(file_path, 'r') as file:
         for line in file:
             line = line.strip()
 
             # Skip empty lines and comments
-            if not line or line.startswith('#'):
+            if not line or line.startswith('*'):
                 continue
 
-            # Match INPUT declarations
-            input_match = input_re.match(line)
-            if input_match:
-                input_name = input_match.group(1)
-                inputs.append(input_name)
-                continue
+            # Check if the line starts with numbers (gate definition)
+            if re.match(r'^\d+', line):
+                parts = line.split()
+                if len(parts) >= 3:
+                    gate_index = parts[0]
+                    gate_name = parts[1]
+                    gate_type = parts[2]
+                    # Handle possible extra columns
+                    extra_info = parts[3:]
 
-            # Match OUTPUT declarations
-            output_match = output_re.match(line)
-            if output_match:
-                output_name = output_match.group(1)
-                outputs.append(output_name)
-                continue
+                    # Create a Gate object
+                    gate = Gate(inputs=[], output=gate_name, gate_type=gate_type)
+                    gate.delay = 0  # You can set delay if needed
 
-            # Match gate definitions
-            gate_match = gate_re.match(line)
-            if gate_match:
-                gate_name = gate_match.group(1)
-                gate_type = gate_match.group(2)
-                gate_inputs = [s.strip() for s in gate_match.group(3).split(',')]
-                gates[gate_name] = {
-                    'type': gate_type,
-                    'inputs': gate_inputs
-                }
-                continue
+                    # If gate is an input
+                    if gate_type == 'inpt':
+                        inputs.append(gate_name)
 
-            # Handle unrecognized lines
-            raise ValueError(f"Unrecognized line format: {line}")
+                    # Add gate to the list and dictionary
+                    gates.append(gate)
+                    gate_dict[gate_name] = gate
 
-    return {
-        'inputs': inputs,
-        'outputs': outputs,
-        'gates': gates
-    }
+                    # Store current gate to associate inputs in subsequent lines
+                    current_gate = gate
+                else:
+                    # This might be a line specifying inputs for the current gate
+                    if current_gate:
+                        input_gates = parts
+                        current_gate.inputs.extend(input_gates)
+                    else:
+                        raise ValueError(f"Unexpected line format without current gate: {line}")
+            else:
+                # This line might be specifying inputs for the current gate
+                parts = line.split()
+                if current_gate:
+                    input_gates = parts
+                    current_gate.inputs.extend(input_gates)
+                else:
+                    raise ValueError(f"Unexpected line format without current gate: {line}")
+
+    # Identify outputs (gates not used as inputs)
+    all_inputs = set()
+    for gate in gates:
+        all_inputs.update(gate.inputs)
+
+    outputs = [gate.output for gate in gates if gate.output not in all_inputs and gate.output not in inputs]
+
+    # Create the Circuit object
+    circuit = Circuit(gates=gates, inputs=inputs, outputs=outputs)
+
+    return circuit
