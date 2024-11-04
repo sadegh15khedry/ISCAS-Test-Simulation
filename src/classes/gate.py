@@ -6,7 +6,7 @@ class Gate:
         self.gate_type = gate_type
         self.delay = 0
         
-    def draw_gate(self):
+    def draw(self):
         input_names = [f"{conn.name} (ID: {conn.id})" for conn in self.input_connections]
         output_name = f"{self.output_connection.name} (ID: {self.output_connection.id})" if self.output_connection else "None"
         print(f"  Gate ID: {self.id}")

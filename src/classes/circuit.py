@@ -17,18 +17,14 @@ class Circuit:
         # Print gates and their connections
         print("Gates:")
         for gate in self.gates:
-            gate.draw_gate()
+            gate.draw()
             
         
         # Print fanouts
         if self.fanouts:
             print("Fanouts:")
             for fanout in self.fanouts:
-                input_conn_name = f"{fanout.input_connection.name} (ID: {fanout.input_connection.id})"
-                output_conn_names = [f"{conn.name} (ID: {conn.id})" for conn in fanout.output_connections]
-                print(f"  Fanout ID: {fanout.id}")
-                print(f"    Input: {input_conn_name}")
-                print(f"    Outputs: {', '.join(output_conn_names)}\n")
+                fanout.draw()
         else:
             print("No Fanouts in the Circuit.\n")
         
