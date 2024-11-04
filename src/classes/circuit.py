@@ -17,12 +17,8 @@ class Circuit:
         # Print gates and their connections
         print("Gates:")
         for gate in self.gates:
-            input_names = [f"{conn.name} (ID: {conn.id})" for conn in gate.input_connections]
-            output_name = f"{gate.output_connection.name} (ID: {gate.output_connection.id})" if gate.output_connection else "None"
-            print(f"  Gate ID: {gate.id}")
-            print(f"    Type: {gate.gate_type}")
-            print(f"    Inputs: {', '.join(input_names)}")
-            print(f"    Output: {output_name}\n")
+            gate.draw_gate()
+            
         
         # Print fanouts
         if self.fanouts:
