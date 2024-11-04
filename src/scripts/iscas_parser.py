@@ -19,188 +19,195 @@ def parse_iscas(file_path):
     signal_connections = {}  # Map signal names to Connection objects
     input_connections = []
     output_connections = []
-    used_as_input_signals = set()
+    connections_used_as_inputs = set()
     current_gate = None
 
     connection_id_counter = 1  # To assign unique IDs to connections
+    fanout_id_counter = 1      # To assign unique IDs to fanouts (Initialized here)
     fanouts = []
-    fanout_id_counter = 1  # To assign unique IDs to fanouts
+    fanout_definitions = []    # Store fanout definitions to process after gates
 
     known_gate_types = {'and', 'nand', 'or', 'nor', 'not', 'xor', 'xnor', 'buff', 'inpt'}
 
+    # Read all lines
     with open(file_path, 'r') as file:
-        for line in file:
-            line = line.strip()
+        lines = file.readlines()
 
-            # Skip empty lines and comments
-            if not line or line.startswith('*'):
-                continue
+    # First pass: process gate definitions and input gates
+    for line in lines:
+        line = line.strip()
 
-            # Split the line into parts
-            parts = line.split()
+        # Skip empty lines and comments
+        if not line or line.startswith('*'):
+            continue
 
-            # Check if the line is a fanout definition line (when 'from' is in parts)
-            if len(parts) >= 4 and 'from' in parts:
-                from_index = parts.index('from')
-                if from_index >= 2:
-                    # It's a fanout definition line
-                    fanout_index = parts[0]
-                    fanout_signal_name = parts[1]
-                    source_signal_name = parts[from_index + 1]
-                    # Optional attributes
-                    extra_info = parts[from_index + 2:]
-                    # Handle '>sa1' or other attributes if necessary
+        # Split the line into parts
+        parts = line.split()
 
-                    # Get or create the Connection object for the source signal
-                    if source_signal_name in signal_connections:
-                        source_conn = signal_connections[source_signal_name]
-                    else:
-                        # Create a new Connection for the source signal
-                        source_conn = Connection(
-                            id=connection_id_counter,
-                            name=source_signal_name,
-                            source=None,  # Will be set when the source is defined
-                            destination=None
-                        )
-                        connection_id_counter += 1
-                        signal_connections[source_signal_name] = source_conn
+        # Check if the line is a fanout definition (contains 'from')
+        if 'from' in parts:
+            # Store the fanout definition for later processing
+            fanout_definitions.append(parts)
+            continue
 
-                    # Create a Connection object for the fanout signal
-                    fanout_conn = Connection(
-                        id=connection_id_counter,
-                        name=fanout_signal_name,
-                        source=source_conn.source,  # Same source as source_conn
-                        destination=None  # Will be set when the gate consuming it is parsed
-                    )
-                    connection_id_counter += 1
-                    signal_connections[fanout_signal_name] = fanout_conn
+        # Check if the line is a gate definition line
+        if len(parts) >= 3 and parts[2] in known_gate_types:
+            gate_index = parts[0]
+            gate_name = parts[1]
+            gate_type = parts[2]
+            # Handle possible extra columns
+            extra_info = parts[3:]
 
-                    # Create a Fanout object
-                    fanout = Fanout(
-                        id=fanout_index,
-                        input_connection=source_conn,
-                        output_connections=[fanout_conn]
-                    )
-                    fanouts.append(fanout)
+            # If gate_type == 'inpt', create a Connection (not a Gate)
+            if gate_type == 'inpt':
+                # Create a Connection object for the input signal
+                conn = Connection(
+                    id=connection_id_counter,
+                    name=gate_index,  # Use gate_index as signal name
+                    source=None,
+                    destination=None  # Primary inputs have no destination
+                )
+                connection_id_counter += 1
+                # Map both gate_index and gate_name to the connection
+                signal_connections[gate_index] = conn
+                signal_connections[gate_name] = conn
+                input_connections.append(conn)
+                current_gate = None
+            else:
+                # Create a Gate object
+                gate = Gate(
+                    id=gate_index,
+                    input_connections=[],
+                    output_connection=None,
+                    gate_type=gate_type
+                )
+                # Map both gate_index and gate_name to the gate
+                gate_dict[gate_index] = gate
+                gate_dict[gate_name] = gate
 
-                    # current_gate remains None
-                    continue  # Move to the next line
-                else:
-                    raise ValueError(f"Invalid fanout definition line: {line}")
+                # Create a Connection object for the gate's output
+                output_conn = Connection(
+                    id=connection_id_counter,
+                    name=gate_index,  # Use gate_index as signal name
+                    source=gate,
+                    destination=None  # Will be set if this signal is used as input elsewhere
+                )
+                connection_id_counter += 1
+                # Map both gate_index and gate_name to the connection
+                signal_connections[gate_index] = output_conn
+                signal_connections[gate_name] = output_conn
+                gate.output_connection = output_conn
 
-            # Check if the line is a gate definition line
-            if len(parts) >= 3 and parts[2] in known_gate_types:
-                gate_index = parts[0]
-                signal_name = parts[1]
-                gate_type = parts[2]
-                # Handle possible extra columns
-                extra_info = parts[3:]
-                # Handle '>sa1' or other attributes if necessary
+                # Add gate to the list
+                gates.append(gate)
 
-                # If gate_type == 'inpt', create a Connection (not a Gate)
-                if gate_type == 'inpt':
-                    # Create a Connection object for the input signal
+                # Store current gate to associate inputs in subsequent lines
+                current_gate = gate
+            continue  # Move to the next line
+
+        # If current_gate is not None, this line specifies inputs for the current gate
+        if current_gate:
+            input_signals = parts
+            for input_signal in input_signals:
+                # Get the Connection object for the input signal
+                conn = signal_connections.get(input_signal)
+                if conn is None:
+                    # Try to get connection using possible variations
+                    possible_names = [
+                        input_signal,
+                        input_signal + 'gat',
+                        input_signal + 'fan'
+                    ]
+                    for name in possible_names:
+                        conn = signal_connections.get(name)
+                        if conn:
+                            break
+                if conn is None:
+                    # Create a new Connection object for undefined signals
                     conn = Connection(
                         id=connection_id_counter,
-                        name=signal_name,
-                        source=None,
-                        destination=None  # Primary inputs have no destination
+                        name=input_signal,
+                        source=None,  # Will be set when the source is defined
+                        destination=None
                     )
                     connection_id_counter += 1
-                    signal_connections[signal_name] = conn
-                    input_connections.append(conn)
-                    # 'inpt' is not a gate, so current_gate remains None
-                    current_gate = None
+                    signal_connections[input_signal] = conn
+
+                # Add the connection to the list of connections used as inputs
+                connections_used_as_inputs.add(conn)
+
+                # Set the destination of the connection to the current gate
+                if conn.destination is None:
+                    conn.destination = current_gate
+
+                # Add the connection to the gate's inputs
+                current_gate.input_connections.append(conn)
+        else:
+            raise ValueError(f"Unexpected line format without current gate: {line}")
+
+    # Second pass: process fanout definitions after gates have been processed
+    for parts in fanout_definitions:
+        from_index = parts.index('from')
+        if from_index >= 2:
+            # It's a fanout definition line
+            fanout_index = parts[0]
+            fanout_signal_name = parts[1]
+            source_signal_name = parts[from_index + 1]
+            # Optional attributes
+            extra_info = parts[from_index + 2:]
+
+            # Get the Connection object for the source signal
+            source_conn = signal_connections.get(source_signal_name)
+            if source_conn is None:
+                raise ValueError(f"Source signal '{source_signal_name}' not found for fanout '{fanout_signal_name}'")
+
+            # Create a Connection object for the fanout signal
+            fanout_conn = Connection(
+                id=connection_id_counter,
+                name=fanout_index,  # Use fanout_index as signal name
+                source=source_conn.source,  # Now source_conn.source should be set
+                destination=None  # Will be set when the gate consuming it is parsed
+            )
+            connection_id_counter += 1
+            # Map both fanout_index and fanout_signal_name to the fanout connection
+            signal_connections[fanout_index] = fanout_conn
+            signal_connections[fanout_signal_name] = fanout_conn
+
+            # Create a Fanout object
+            fanout = Fanout(
+                id=fanout_id_counter,
+                input_connection=source_conn,
+                output_connections=[fanout_conn]
+            )
+            fanout_id_counter += 1
+            fanouts.append(fanout)
+
+            # **Add the source connection to the list of connections used as inputs**
+            connections_used_as_inputs.add(source_conn)
+
+        else:
+            raise ValueError(f"Invalid fanout definition line: {parts}")
+
+    # Update connections for gates that have inputs from fanouts
+    for gate in gates:
+        for i, conn in enumerate(gate.input_connections):
+            # If the connection's source is None, try to update it from signal_connections
+            if conn.source is None:
+                updated_conn = signal_connections.get(conn.name)
+                if updated_conn is not None:
+                    gate.input_connections[i] = updated_conn
+                    connections_used_as_inputs.add(updated_conn)
                 else:
-                    # Create a Gate object
-                    gate = Gate(
-                        id=gate_index,
-                        input_connections=[],
-                        output_connection=None,
-                        gate_type=gate_type
-                    )
-                    gate_dict[signal_name] = gate
+                    # Connection remains as is
+                    pass
 
-                    # Create a Connection object for the gate's output
-                    output_conn = Connection(
-                        id=connection_id_counter,
-                        name=signal_name,
-                        source=gate,
-                        destination=None  # Will be set if this signal is used as input elsewhere
-                    )
-                    connection_id_counter += 1
-                    signal_connections[signal_name] = output_conn
-                    gate.output_connection = output_conn
-
-                    # Add gate to the list
-                    gates.append(gate)
-
-                    # Store current gate to associate inputs in subsequent lines
-                    current_gate = gate
-                continue  # Move to the next line
-
-            # If current_gate is not None, this line specifies inputs for the current gate
-            if current_gate:
-                input_signals = parts
-                for input_signal in input_signals:
-                    # Mark signal as used as input
-                    used_as_input_signals.add(input_signal)
-
-                    # Get or create the Connection object for the input signal
-                    if input_signal in signal_connections:
-                        conn = signal_connections[input_signal]
-                    else:
-                        # Create a new Connection object for undefined signals
-                        conn = Connection(
-                            id=connection_id_counter,
-                            name=input_signal,
-                            source=None,  # Will be set when the source is defined
-                            destination=None
-                        )
-                        connection_id_counter += 1
-                        signal_connections[input_signal] = conn
-
-                    # Set the destination of the connection to the current gate
-                    if conn.destination is None:
-                        conn.destination = current_gate
-                    else:
-                        # Handle multiple destinations (fanout)
-                        # Create a Fanout object if necessary
-                        # Since we now have multiple destinations, we need to handle fanouts
-                        fanout_conn = Connection(
-                            id=connection_id_counter,
-                            name=f"{conn.name}_fanout{fanout_id_counter}",
-                            source=conn.source,
-                            destination=current_gate
-                        )
-                        connection_id_counter += 1
-
-                        # Update the signal_connections with the new connection
-                        signal_connections[fanout_conn.name] = fanout_conn
-
-                        # Add the new connection to the current gate's inputs
-                        current_gate.input_connections.append(fanout_conn)
-
-                        # Create a Fanout object
-                        fanout = Fanout(
-                            id=fanout_id_counter,
-                            input_connection=conn,
-                            output_connections=[fanout_conn]
-                        )
-                        fanout_id_counter += 1
-                        fanouts.append(fanout)
-
-                        continue  # Skip adding the original connection
-
-                    # Add the connection to the gate's inputs
-                    current_gate.input_connections.append(conn)
-            else:
-                raise ValueError(f"Unexpected line format without current gate: {line}")
-
-        # Identify output connections (signals not used as inputs)
-        for conn_name, conn in signal_connections.items():
-            if conn_name not in used_as_input_signals and conn_name not in [c.name for c in input_connections]:
-                # This is an output connection
+    # Identify output connections (connections that are outputs of gates and not used as inputs)
+    for conn in signal_connections.values():
+        if (
+            isinstance(conn.source, Gate) and
+            conn not in connections_used_as_inputs
+        ):
+            if conn not in output_connections:
                 output_connections.append(conn)
 
     # Create the Circuit object with fanouts

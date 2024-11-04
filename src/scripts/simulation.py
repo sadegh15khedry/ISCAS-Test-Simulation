@@ -5,5 +5,6 @@ def simulation(circuit_path, inputs_path, test_vecotors_path):
         print (f"gate type: {gate.gate_type}")
         
     for fanout in circuit.fanouts:
-        print(f"fanout: {fanout.input_connection.name} -> {len(fanout.output_connection)}")
+        print(f"fanout: {fanout.input_connection.id} -> {len(fanout.output_connections)}")
         
+    circuit.draw_circuit()
