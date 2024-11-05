@@ -8,6 +8,7 @@ class Connection:
         self.current_value = None
         self.history_of_values = []
         self.history_id = 1
+        self.level = None
         
     def update_value(self, vaule, time):
         self.current_value = vaule

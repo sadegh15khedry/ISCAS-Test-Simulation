@@ -6,6 +6,7 @@ class Gate:
         self.output_connection = output_connection
         self.gate_type = gate_type
         self.delay = 0
+        self.level = None
         
     def draw(self):
         input_names = [f"{conn.name} (ID: {conn.id})" for conn in self.input_connections]
@@ -15,198 +16,7 @@ class Gate:
         print(f"    Inputs: {', '.join(input_names)}")
         print(f"    Output: {output_name}\n")
         
-    # # def get_and_gate_output(self, inputs):
-    # def get_and_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of an AND gate based on its inputs.
 
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the AND gate.
-
-    #     Returns:
-    #         LogicState: The output of the AND gate.
-    #     """
-    #     # If any input is ZERO, the output is ZERO
-    #     if any(inp == LogicState.ZERO for inp in inputs):
-    #         return LogicState.ZERO
-
-    #     # If all inputs are ONE, the output is ONE
-    #     elif all(inp == LogicState.ONE for inp in inputs):
-    #         return LogicState.ONE
-
-    #     # If any input is UNKNOWN, the output is UNKNOWN
-    #     elif any(inp == LogicState.UNKNOWN for inp in inputs):
-    #         return LogicState.UNKNOWN
-
-    #     # If any input is HIGH_IMPEDANCE, the output is HIGH_IMPEDANCE
-    #     elif any(inp == LogicState.HIGH_IMPEDANCE for inp in inputs):
-    #         return LogicState.HIGH_IMPEDANCE
-
-    #     # Default to UNKNOWN for any other unforeseen cases
-    #     else:
-    #         return LogicState.UNKNOWN
-
-    # def get_nand_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of a NAND gate based on its inputs.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the NAND gate.
-
-    #     Returns:
-    #         LogicState: The output of the NAND gate.
-    #     """
-    #     and_output = self.get_and_gate_output(inputs)
-    #     return self.invert_logic_state(and_output)
-
-    # def get_or_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of an OR gate based on its inputs.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the OR gate.
-
-    #     Returns:
-    #         LogicState: The output of the OR gate.
-    #     """
-    #     # If any input is ONE, the output is ONE
-    #     if any(inp == LogicState.ONE for inp in inputs):
-    #         return LogicState.ONE
-
-    #     # If all inputs are ZERO, the output is ZERO
-    #     elif all(inp == LogicState.ZERO for inp in inputs):
-    #         return LogicState.ZERO
-
-    #     # If any input is UNKNOWN, the output is UNKNOWN
-    #     elif any(inp == LogicState.UNKNOWN for inp in inputs):
-    #         return LogicState.UNKNOWN
-
-    #     # If any input is HIGH_IMPEDANCE, the output is HIGH_IMPEDANCE
-    #     elif any(inp == LogicState.HIGH_IMPEDANCE for inp in inputs):
-    #         return LogicState.HIGH_IMPEDANCE
-
-    #     # Default to UNKNOWN for any other unforeseen cases
-    #     else:
-    #         return LogicState.UNKNOWN
-
-    # def get_nor_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of a NOR gate based on its inputs.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the NOR gate.
-
-    #     Returns:
-    #         LogicState: The output of the NOR gate.
-    #     """
-    #     or_output = self.get_or_gate_output(inputs)
-    #     return self.invert_logic_state(or_output)
-
-    # def get_xor_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of an XOR gate based on its inputs.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the XOR gate.
-
-    #     Returns:
-    #         LogicState: The output of the XOR gate.
-    #     """
-    #     count_one = sum(1 for inp in inputs if inp == LogicState.ONE)
-    #     count_zero = sum(1 for inp in inputs if inp == LogicState.ZERO)
-    #     count_unknown = sum(1 for inp in inputs if inp == LogicState.UNKNOWN)
-    #     count_z = sum(1 for inp in inputs if inp == LogicState.HIGH_IMPEDANCE)
-
-    #     # If any input is UNKNOWN, the output is UNKNOWN
-    #     if count_unknown > 0:
-    #         return LogicState.UNKNOWN
-
-    #     # If any input is HIGH_IMPEDANCE and not all inputs are HIGH_IMPEDANCE, output is UNKNOWN
-    #     if count_z > 0 and count_z != len(inputs):
-    #         return LogicState.UNKNOWN
-
-    #     # XOR is true if an odd number of inputs are ONE
-    #     if count_one % 2 == 1:
-    #         return LogicState.ONE
-    #     else:
-    #         return LogicState.ZERO
-
-    # def get_xnor_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of an XNOR gate based on its inputs.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the XNOR gate.
-
-    #     Returns:
-    #         LogicState: The output of the XNOR gate.
-    #     """
-    #     xor_output = self.get_xor_gate_output(inputs)
-    #     return self.invert_logic_state(xor_output)
-
-    # def get_not_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of a NOT gate based on its input.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the NOT gate.
-
-    #     Returns:
-    #         LogicState: The output of the NOT gate.
-    #     """
-    #     if len(inputs) != 1:
-    #         raise ValueError("NOT gate must have exactly one input.")
-
-    #     inp = inputs[0]
-
-    #     if inp == LogicState.ZERO:
-    #         return LogicState.ONE
-    #     elif inp == LogicState.ONE:
-    #         return LogicState.ZERO
-    #     elif inp == LogicState.UNKNOWN:
-    #         return LogicState.UNKNOWN
-    #     elif inp == LogicState.HIGH_IMPEDANCE:
-    #         return LogicState.HIGH_IMPEDANCE
-    #     else:
-    #         return LogicState.UNKNOWN
-
-    # def get_buf_gate_output(self, inputs):
-    #     """
-    #     Calculates the output of a BUF (Buffer) gate based on its input.
-
-    #     Parameters:
-    #         inputs (list of LogicState): The inputs to the BUF gate.
-
-    #     Returns:
-    #         LogicState: The output of the BUF gate.
-    #     """
-    #     if len(inputs) != 1:
-    #         raise ValueError("BUF gate must have exactly one input.")
-
-    #     inp = inputs[0]
-    #     return inp  # Buffer simply outputs the input as-is
-
-    # @staticmethod
-    # def invert_logic_state(state):
-        """
-        Inverts the given LogicState.
-
-        Parameters:
-            state (LogicState): The LogicState to invert.
-
-        Returns:
-            LogicState: The inverted LogicState.
-        """
-        if state == LogicState.ZERO:
-            return LogicState.ONE
-        elif state == LogicState.ONE:
-            return LogicState.ZERO
-        elif state == LogicState.UNKNOWN:
-            return LogicState.UNKNOWN
-        elif state == LogicState.HIGH_IMPEDANCE:
-            return LogicState.HIGH_IMPEDANCE
-        else:
-            return LogicState.UNKNOWN
 
     def get_and_gate_output(self, inputs):
         """
@@ -396,13 +206,7 @@ class Gate:
         else:
             return 'X'
     
-    
-    
-    
-    
-    
-        
-        
+          
     def update_output(self, time):
         inputs = []
         for input in self.input_connections:
