@@ -21,4 +21,12 @@ class Connection:
             
     def print_output(self, time):
         print(f"output connection: {self.name}  value: {self.current_value}")
+        
+    
+    def set_level(self, value):
+        self.level = value
+        print (f"circuit input: {self.name} level: {self.level}") 
+        if self.destination:
+            self.destination.set_level()
+        
 

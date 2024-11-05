@@ -12,5 +12,12 @@ class Fanout:
         print(f"    Input: {input_conn_name}")
         print(f"    Outputs: {', '.join(output_conn_names)}\n")
 
+    def set_level(self):
+        print(f"fanout {self.id}")
+        if self.input_connection.level != None: 
+            print(self.input_connection.level)
+            for connection in self.output_connections:
+                connection.set_level(self.input_connection.level)
+                print (f"fanout output: {connection.name} level: {connection.level}") 
 
 

@@ -5,23 +5,27 @@ class Circuit:
         self.output_connections = output_connections
         self.fanouts = fanouts
     
+    
     def set_levels(self):
         for connection in self.input_connections:
-            connection.level = 0
-            print (f"{connection.id} level: {connection.level}") 
-
-        for gate in self.gates:
-            max_input_level = 0
-            for conneciton in gate.input_connections:
-                if connection.level == None:
-                    max_input_level = None
-                    break
-                elif connection.level > max_input_level:
-                    max_input_level = connection.level
-            gate.level = max_input_level
+            connection.set_level(0) 
             
-            if gate.level:
-                print (f"gate {gate.id} level: {gate.level}")
+        for fanout in self.fanouts:
+                fanout.set_level()
+            
+        
+        for gate in self.gates:
+            gate.set_level()
+            
+            
+            
+            # if max_input_level:
+            #     gate.level = max_input_level
+            #     gate.output_connection = max_input_level + 1
+                
+                # print (f"{gate.output_connection.name} level: {gate.output_connection.level}") 
+                
+            
                 
     
     def set_input_value(self, input_file, time):

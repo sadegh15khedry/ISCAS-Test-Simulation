@@ -234,5 +234,17 @@ class Gate:
         if self.output_connection:
             self.output_connection.update_value(output, time)
 
-            
+    def set_level(self):
+        max_input_level = 0
+        for connection in self.input_connections:
+                if connection.level == None:
+                    max_input_level = None
+                    # print(f"{connection.name} has None conneciotn")
+                    break
+                elif connection.level > max_input_level:
+                    max_input_level = connection.level
+                    print(f"conneciton name: {connection.name} level:{connection.level}")
+        if max_input_level != None:
+            self.level = max_input_level
+            self.output_connection.set_level(max_input_level + 1) 
 
