@@ -25,8 +25,10 @@ class Connection:
     
     def set_level(self, value):
         self.level = value
-        print (f"circuit input: {self.name} level: {self.level}") 
+        # print (f"circuit input: {self.name} level: {self.level}") 
         if self.destination:
             self.destination.set_level()
+            
+
         
 

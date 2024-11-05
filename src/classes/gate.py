@@ -1,11 +1,11 @@
 from logic_state import LogicState
 class Gate:
-    def __init__(self, id, input_connections, output_connection, gate_type):
+    def __init__(self, id, input_connections, output_connection, delay, gate_type):
         self.id = id  # unique identifier for the gate
         self.input_connections = input_connections
         self.output_connection = output_connection
         self.gate_type = gate_type
-        self.delay = 0
+        self.delay = delay
         self.level = None
         
     def draw(self):
@@ -13,11 +13,10 @@ class Gate:
         output_name = f"{self.output_connection.name} (ID: {self.output_connection.id})" if self.output_connection else "None"
         print(f"  Gate ID: {self.id}")
         print(f"    Type: {self.gate_type}")
+        print(f"    Delay: {self.delay}")
         print(f"    Inputs: {', '.join(input_names)}")
         print(f"    Output: {output_name}\n")
         
-
-
     def get_and_gate_output(self, inputs):
         """
         Calculates the output of an AND gate based on its inputs.
@@ -243,7 +242,7 @@ class Gate:
                     break
                 elif connection.level > max_input_level:
                     max_input_level = connection.level
-                    print(f"conneciton name: {connection.name} level:{connection.level}")
+                    # print(f"conneciton name: {connection.name} level:{connection.level}")
         if max_input_level != None:
             self.level = max_input_level
             self.output_connection.set_level(max_input_level + 1) 

@@ -13,21 +13,9 @@ class Circuit:
         for fanout in self.fanouts:
                 fanout.set_level()
             
-        
         for gate in self.gates:
             gate.set_level()
             
-            
-            
-            # if max_input_level:
-            #     gate.level = max_input_level
-            #     gate.output_connection = max_input_level + 1
-                
-                # print (f"{gate.output_connection.name} level: {gate.output_connection.level}") 
-                
-            
-                
-    
     def set_input_value(self, input_file, time):
         # print(input_file)
         

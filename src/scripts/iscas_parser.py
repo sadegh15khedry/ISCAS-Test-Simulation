@@ -71,6 +71,7 @@ def parse_iscas(file_path):
                     id=gate_index,
                     input_connections=[],
                     output_connection=None,
+                    delay=None,  # Will be set when inputs are parsed
                     gate_type=gate_type
                 )
                 # Map both gate_index and gate_name to the gate
@@ -100,6 +101,14 @@ def parse_iscas(file_path):
         # If current_gate is not None, this line specifies inputs for the current gate
         if current_gate:
             input_signals = parts
+            delay = None
+            # Check if the last item is a number (delay)
+            if input_signals and re.match(r'^\d+$', input_signals[-1]):
+                delay = int(input_signals[-1])
+                input_signals = input_signals[:-1]  # Remove delay from input_signals
+                # Set the delay in current_gate
+                current_gate.delay = delay
+            # Now process the input_signals
             for input_signal in input_signals:
                 # Get the Connection object for the input signal
                 conn = signal_connections.get(input_signal)
@@ -168,7 +177,7 @@ def parse_iscas(file_path):
             # Add the source connection to the list of connections used as inputs
             connections_used_as_inputs.add(source_conn)
 
-            # **Group fanouts by input connection**
+            # Group fanouts by input connection
             # Use source_conn.name as the key in fanout_dict
             fanout = fanout_dict.get(source_conn.name)
             if fanout:
@@ -218,5 +227,8 @@ def parse_iscas(file_path):
     )
 
     return circuit
+
+
+
 
 
