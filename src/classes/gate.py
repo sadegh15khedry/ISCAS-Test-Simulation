@@ -14,6 +14,7 @@ class Gate:
         print(f"  Gate ID: {self.id}")
         print(f"    Type: {self.gate_type}")
         print(f"    Delay: {self.delay}")
+        print(f"    Level: {(self.level)}")
         print(f"    Inputs: {', '.join(input_names)}")
         print(f"    Output: {output_name}\n")
         
@@ -33,6 +34,7 @@ class Gate:
 
         # If all inputs are 1, output is 1
         if all(inp == 1 for inp in inputs):
+            print("all ones")
             return 1
 
         # If any input is 'X', output is 'X'
@@ -206,10 +208,19 @@ class Gate:
             return 'X'
     
           
-    def update_output(self, time):
+    def pass_values(self, time, delay_consideration):
+        # if delay_consideration is True:
+        #     if time >= self.delay + 
+            
         inputs = []
         for input in self.input_connections:
-            inputs.append(input.current_value)
+            if input.current_value == '1' or input.current_value == '0':
+                inputs.append(int(input.current_value))
+            else:
+                inputs.append(input.current_value)
+            
+        
+        print(f"Gate: {self.id} type: {self.gate_type} , Inputs: {inputs}")
         
         output = None
         if self.gate_type == 'and':

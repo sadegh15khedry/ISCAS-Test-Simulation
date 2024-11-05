@@ -4,6 +4,7 @@ class Circuit:
         self.input_connections = input_connections
         self.output_connections = output_connections
         self.fanouts = fanouts
+        self.max_gate_level = 0
     
     
     def set_levels(self):
@@ -11,27 +12,40 @@ class Circuit:
             connection.set_level(0) 
             
         for fanout in self.fanouts:
-                fanout.set_level()
+            fanout.set_level()
             
         for gate in self.gates:
             gate.set_level()
-            
-    def set_input_value(self, input_file, time):
-        # print(input_file)
         
-            # print("idex ",index)
+
+    def set_max_gate_level(self):
+        for gate in self.gates:
+            if gate.level > self.max_gate_level:
+                self.max_gate_level = gate.level
+    
+            
+    def set_ciruit_inputs(self, input_file, time):
         for connection in self.input_connections:
             for index, row in input_file.iterrows():
                 # print(row['id'])
                 if int(connection.name) == int(row.id):
                     connection.update_value(row['value'], time)
-                    print(f"Initialized input {connection.name} with value {row['value']} at time step {time}")
+                    # print(f"Initialized input {connection.name} with value {row['value']} at time step {time}")
                     
-    def pass_values_to_output(self, time):
-        for connection in self.input_connections:
-            gate = connection.destination
-            if gate:
-                gate.update_output(time)
+    def pass_values_to_output(self, time, delay_consideration):
+        self.set_max_gate_level()
+        for fanout in self.fanouts:
+            fanout.pass_values(time)
+            
+        for level in range(self.max_gate_level):
+            print(f"Level {level} started:\n")
+            for gate in self.gates:
+                if gate.level == level:
+                    gate.pass_values(time, delay_consideration)
+            
+            for fanout in self.fanouts:
+                        fanout.pass_values(time)        
+
     
     def draw_circuit(self):
         print("Circuit Representation:\n")
