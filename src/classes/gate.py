@@ -209,15 +209,34 @@ class Gate:
     
           
     def pass_values(self, time, delay_consideration):
-        # if delay_consideration is True:
-        #     if time >= self.delay + 
-            
+        # print(type(time))
+        # time = int(time)
         inputs = []
-        for input in self.input_connections:
-            if input.current_value == '1' or input.current_value == '0':
-                inputs.append(int(input.current_value))
-            else:
-                inputs.append(input.current_value)
+        if delay_consideration is True:
+            for connection in self.input_connections:
+                if connection.value_time + self.delay > time: #value is set before the delay
+                    if connection.current_value == '1' or connection.current_value == '0':
+                        inputs.append(int(connection.current_value))
+                    else:
+                        inputs.append(connection.current_value)
+                elif len(connection.history_of_values) == 0: #no values has been set
+                    inputs.append('X')
+                elif len(connection.history_of_values) > 0:
+                    value = 'X'
+                    for index, value_time in enumerate(connection.history_of_times):
+                        if value_time + self.delay < time:
+                            value = connection.history_of_values[index]
+                            
+                        
+                    inputs.append(value)
+                    
+                    
+        else: # Without delay_consideration
+            for connection in self.input_connections:
+                if connection.current_value == '1' or connection.current_value == '0':
+                    inputs.append(int(connection.current_value))
+                else:
+                    inputs.append(connection.current_value)
             
         
         print(f"Gate: {self.id} type: {self.gate_type} , Inputs: {inputs}")

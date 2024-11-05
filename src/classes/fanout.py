@@ -12,10 +12,12 @@ class Fanout:
         print(f"    Input: {input_conn_name}")
         print(f"    Outputs: {', '.join(output_conn_names)}\n")
 
+    
     def pass_values(self, time):
         for connection in self.output_connections:
             connection.update_value(self.input_connection.current_value ,time)
             
+    
     def set_level(self):
         # print(f"fanout {self.id}")
         if self.input_connection.level != None: 

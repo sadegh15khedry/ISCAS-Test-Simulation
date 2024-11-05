@@ -5,17 +5,21 @@ class Connection:
         self.source = source
         self.destination = destination
         self.delay = 0
-        self.current_value = None
-        self.value_change_time = 0
+        self.current_value = 'X'
+        self.value_time = 0
         self.history_of_values = []
+        self.history_of_times = []
         self.history_id = 1
         self.level = None
         
-    def update_value(self, vaule, time):
-        self.current_value = vaule
-        self.value_change_time = time
-        history_entry = {"id": self.history_id, "time": time, "value": self.current_value}
-        self.history_of_values.append(history_entry)
+    def update_value(self, value, time):
+        # print(type(time))
+        # time = int(time)
+        self.current_value = value
+        self.value_time = time
+        self.history_of_values.append(self.current_value)
+        self.history_of_times.append(self.value_time)
+        
         print(f"updated conneciton:{self.name}, to value:{self.current_value}")
         self.history_id += 1
 
@@ -23,7 +27,7 @@ class Connection:
     def print_output(self, time):
         print(f"output connection: {self.name}  value: {self.current_value}")
         
-    
+        
     def set_level(self, value):
         self.level = value
         # print (f"circuit input: {self.name} level: {self.level}") 
