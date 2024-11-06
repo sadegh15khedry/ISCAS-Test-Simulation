@@ -4,7 +4,6 @@ class Connection:
         self.name = name
         self.source = source
         self.destination = destination
-        self.delay = 0
         self.current_value = 'X'
         self.value_time = 0
         self.history_of_values = []
@@ -20,7 +19,7 @@ class Connection:
         self.history_of_values.append(self.current_value)
         self.history_of_times.append(self.value_time)
         
-        print(f"updated conneciton:{self.name}, to value:{self.current_value}")
+        # print(f"updated conneciton:{self.name}, to value:{self.current_value}")
         self.history_id += 1
 
             

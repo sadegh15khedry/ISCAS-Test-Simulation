@@ -209,30 +209,30 @@ class Gate:
     
     def get_inputs_with_delay(self, time):
         inputs = []
+        acceptable_value_time = time - self.delay
+        print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
         for connection in self.input_connections:
-                value = 'X'
-                # print(len(connection.history_of_values))
-                # if len(connection.history_of_values) == 0: #no values has been set
-                #     print(f"No value has been set yet for the connection {connection.name} at time {time}")
-                #     value = 'X'
-                # print(f"value has been set yet for the at time {connection.value_time}")
-                print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
-                if connection.value_time < time - self.delay: #value is set before the delay
-                    print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
-                    value = connection.current_value
+            print(connection.name)
+            value = 'X'
+            print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
+            if connection.value_time < acceptable_value_time: #value is set before the delay
+                print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
+                value = connection.current_value
                         
                 
-                elif len(connection.history_of_values) > 0:
-                    for index, value_time in enumerate(connection.history_of_times):
-                        if value_time < time - self.delay:
-                            print("here")
-                            value = connection.history_of_values[index]
+            elif len(connection.history_of_values) > 0:
+                for index, value_time in enumerate(connection.history_of_times):
+                    if value_time < acceptable_value_time:
+                        print("here")
+                        value = connection.history_of_values[index]
                 
                 
-                if connection.current_value == '1' or connection.current_value == '0':
-                    value = int(connection.current_value)        
-                inputs.append(value)
-                return inputs
+            if value == '1' or value == '0':
+                value = int(value)
+                # print(f"value converted: {value}")    
+            print(f"value: {value}")    
+            inputs.append(value)
+        return inputs
           
     def get_inputs_without_delay(self, time):
         inputs = []
