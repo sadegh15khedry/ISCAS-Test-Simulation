@@ -37,7 +37,7 @@ class Circuit:
         for fanout in self.fanouts:
             fanout.pass_values(time)
             
-        for level in range(self.max_gate_level):
+        for level in range(self.max_gate_level+1):
             print(f"Level {level} started:\n")
             for gate in self.gates:
                 if gate.level == level:

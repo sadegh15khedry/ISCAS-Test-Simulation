@@ -214,21 +214,23 @@ class Gate:
         inputs = []
         if delay_consideration is True:
             for connection in self.input_connections:
-                if connection.value_time + self.delay > time: #value is set before the delay
-                    if connection.current_value == '1' or connection.current_value == '0':
-                        inputs.append(int(connection.current_value))
-                    else:
-                        inputs.append(connection.current_value)
-                elif len(connection.history_of_values) == 0: #no values has been set
-                    inputs.append('X')
-                elif len(connection.history_of_values) > 0:
+                value = 'X'
+                if len(connection.history_of_values) == 0: #no values has been set
                     value = 'X'
-                    for index, value_time in enumerate(connection.history_of_times):
-                        if value_time + self.delay < time:
-                            value = connection.history_of_values[index]
-                            
+                    
+                elif connection.value_time < time - self.delay: #value is set before the delay
+                    value = connection.current_value
                         
-                    inputs.append(value)
+                
+                elif len(connection.history_of_values) > 0:
+                    for index, value_time in enumerate(connection.history_of_times):
+                        if value_time < time - self.delay:
+                            value = connection.history_of_values[index]
+                
+                if connection.current_value == '1' or connection.current_value == '0':
+                    value = int(connection.current_value)  
+                        
+                inputs.append(value)
                     
                     
         else: # Without delay_consideration
