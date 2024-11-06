@@ -13,7 +13,7 @@ def simulation(circuit_path, inputs_path, test_vecotors_path, delay_consideratio
     # print(test_vector_file)
     
     time = -20
-    max_iterations = 5
+    max_iterations = 1
     while time < max_iterations:
 
         if(time < 0):

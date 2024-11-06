@@ -26,16 +26,16 @@
    10    10gat nand    1   2      >sa1
      1     8    1
    11    11gat nand    2   2 >sa0 >sa1
-     9     6    2
+     9     6    1
    14    14fan from    11gat      >sa1
    15    15fan from    11gat      >sa1
    16    16gat nand    2   2 >sa0 >sa1
-     2    14    3
+     2    14    1
    20    20fan from    16gat      >sa1
    21    21fan from    16gat      >sa1
    19    19gat nand    1   2      >sa1
-    15     7    4
+    15     7    1
    22    22gat nand    0   2 >sa0 >sa1
     10    20    5
    23    23gat nand    0   2 >sa0 >sa1
-    21    19    6
+    21    19    1
