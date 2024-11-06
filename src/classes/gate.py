@@ -34,7 +34,7 @@ class Gate:
 
         # If all inputs are 1, output is 1
         if all(inp == 1 for inp in inputs):
-            print("all ones")
+            # print("all ones")
             return 1
 
         # If any input is 'X', output is 'X'
@@ -210,27 +210,25 @@ class Gate:
     def get_inputs_with_delay(self, time):
         inputs = []
         acceptable_value_time = time - self.delay
-        print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
+        # print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
         for connection in self.input_connections:
             print(connection.name)
             value = 'X'
-            print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
+            # print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
             if connection.value_time < acceptable_value_time: #value is set before the delay
-                print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
+                # print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
                 value = connection.current_value
                         
                 
             elif len(connection.history_of_values) > 0:
                 for index, value_time in enumerate(connection.history_of_times):
                     if value_time < acceptable_value_time:
-                        print("here")
                         value = connection.history_of_values[index]
-                
                 
             if value == '1' or value == '0':
                 value = int(value)
                 # print(f"value converted: {value}")    
-            print(f"value: {value}")    
+            # print(f"value: {value}")    
             inputs.append(value)
         return inputs
           
@@ -254,7 +252,7 @@ class Gate:
             
             
         
-        print(f"Gate: {self.id} type: {self.gate_type} , Inputs: {inputs}")
+        # print(f"Gate: {self.id} type: {self.gate_type} , Inputs: {inputs}")
         
         output = None
         if self.gate_type == 'and':

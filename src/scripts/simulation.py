@@ -13,12 +13,12 @@ def simulation(circuit_path, inputs_path, test_vecotors_path, delay_consideratio
     # print(test_vector_file)
     
     time = -20
-    max_iterations = 1
+    max_iterations = 50
     while time < max_iterations:
 
         if(time < 0):
             circuit.set_levels() 
-            time += 0.1 
+            time += 0.001 
         elif(time >= 0):
             time = int(time)
             # if(time == 0):
@@ -29,7 +29,7 @@ def simulation(circuit_path, inputs_path, test_vecotors_path, delay_consideratio
             time_step_inputs = input_file[input_file['time'] == time]
             circuit.set_ciruit_inputs(time_step_inputs, time)
             circuit.pass_values_to_output(time, delay_consideration)
-            # circuit.print_output(time)
+            circuit.print_output(time)
         
             print(f"Time step: {time} ended -----------------------------")
             time = time + 1

@@ -13,6 +13,7 @@ class Connection:
         
     def update_value(self, value, time):
         # print(type(time))
+        
         # time = int(time)
         self.current_value = value
         self.value_time = time
