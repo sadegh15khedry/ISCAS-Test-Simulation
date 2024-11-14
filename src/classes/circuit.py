@@ -3,9 +3,30 @@ class Circuit:
         self.gates = gates
         self.input_connections = input_connections
         self.output_connections = output_connections
+        self.net_connections = []
         self.fanouts = fanouts
         self.max_gate_level = 0
     
+    def initialize_net_connections(self):
+        result = []
+        for gate in self.gates:
+            for input_connection in gate.input_connections:
+                if input_connection not in self.input_connections:
+                    result.append(input_connection)
+       
+            if gate.output_connection not in self.output_connections:
+                result.append(gate.output_connection)
+        print(self.fanouts)        
+        for fanout in self.fanouts:
+            for output_connection in fanout.output_connections:
+                if output_connection not in self.output_connections and output_connection not in result:
+                    result.append(output_connection)
+                
+            if fanout.input_connection not in self.input_connections and fanout.input_connection not in result:
+                result.append(fanout.input_connection)
+        result2 = []
+        [result2.append(x) for x in result if x not in result2]
+        self.net_connections = result2
     
     def set_levels(self):
         for connection in self.input_connections:
@@ -24,7 +45,7 @@ class Circuit:
                 self.max_gate_level = gate.level
     
             
-    def set_ciruit_inputs(self, input_file, time):
+    def set_circuit_inputs(self, input_file, time):
         for connection in self.input_connections:
             for index, row in input_file.iterrows():
                 # print(row['id'])
@@ -85,7 +106,18 @@ class Circuit:
     def print_inputs(self):
         for input in self.input_connections:
             print(f" input:{input.name}, value: {input.current_value}")
+            
+    def print_net_connections(self):
+        for net in self.net_connections:
+            print(f" net:{net.name}, value: {net.current_value}")
      
     def print_outputs(self):
         for output in self.output_connections:
             print(f" output:{output.name}, value: {output.current_value}")
+            
+    def print_connections_values(self):
+        self.print_inputs()
+        print(" ")
+        self.print_net_connections()
+        print(" ")
+        self.print_outputs()

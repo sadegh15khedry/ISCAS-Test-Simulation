@@ -212,7 +212,7 @@ class Gate:
         acceptable_value_time = time - self.delay
         # print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
         for connection in self.input_connections:
-            print(connection.name)
+            # print(connection.name)
             value = 'X'
             # print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
             if connection.value_time < acceptable_value_time: #value is set before the delay
@@ -222,7 +222,7 @@ class Gate:
                 
             elif len(connection.history_of_values) > 0:
                 for index, value_time in enumerate(connection.history_of_times):
-                    if value_time < acceptable_value_time:
+                    if value_time <= acceptable_value_time:
                         value = connection.history_of_values[index]
                 
             if value == '1' or value == '0':
