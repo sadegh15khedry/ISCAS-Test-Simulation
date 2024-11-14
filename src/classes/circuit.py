@@ -82,7 +82,10 @@ class Circuit:
             print(f"  {conn.name} (ID: {conn.id})")
         print()
              
-    def print_output(self, time):
-        for output in self.output_connections:
-            output.print_output(time)
+    def print_inputs(self):
+        for input in self.input_connections:
+            print(f" input:{input.name}, value: {input.current_value}")
      
+    def print_outputs(self):
+        for output in self.output_connections:
+            print(f" output:{output.name}, value: {output.current_value}")

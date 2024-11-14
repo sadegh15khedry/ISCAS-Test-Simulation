@@ -29,7 +29,9 @@ def simulation(circuit_path, inputs_path, test_vecotors_path, delay_consideratio
             time_step_inputs = input_file[input_file['time'] == time]
             circuit.set_ciruit_inputs(time_step_inputs, time)
             circuit.pass_values_to_output(time, delay_consideration)
-            circuit.print_output(time)
+            circuit.print_inputs()
+            print(" ")
+            circuit.print_outputs()
         
             print(f"Time step: {time} ended -----------------------------")
             time = time + 1
