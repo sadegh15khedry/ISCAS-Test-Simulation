@@ -46,11 +46,18 @@ class Circuit:
     
             
     def set_circuit_inputs(self, input_file, time):
-        for connection in self.input_connections:
-            for index, row in input_file.iterrows():
-                # print(row['id'])
-                if int(connection.name) == int(row.id):
-                    connection.update_value(row['value'], time)
+        if input_file.empty:
+            return
+        else:
+            print("New inputs detected!!!!!!!!")
+            for connection in self.input_connections:
+                value = input_file[connection.name].squeeze()
+                print(f"connection: {connection.name} new value:{value}")
+                connection.update_value(value, time)
+            # for index, row in input_file.iterrows():
+            #     # print(row['id'])
+            #     if int(connection.name) == int(row.id):
+            #         connection.update_value(row['value'], time)
                     # print(f"Initialized input {connection.name} with value {row['value']} at time step {time}")
                     
     def pass_values_to_output(self, time, delay_consideration):
