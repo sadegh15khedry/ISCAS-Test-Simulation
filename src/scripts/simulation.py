@@ -1,7 +1,7 @@
 from iscas_parser import parse_iscas
-from io_file_work import load_csv_file
+from io_file_work import load_csv_file, generate_input_file
 
-def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration, max_iterations):
+def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration, max_iterations, input_file_generation):
     
     circuit = parse_iscas(circuit_path)
     circuit.initialize_net_connections()
@@ -10,10 +10,10 @@ def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration
     
     
     input_file = load_csv_file(inputs_path)
-    # test_vector_file = load_csv_file(test_vectors_path)
-    
-    # print(input_file)
-    # print(test_vector_file)
+    if(input_file is None and input_file_generation == True):
+        generate_input_file(circuit, inputs_path)
+        input_file = load_csv_file(inputs_path)
+
     
     time = 0
     while time < max_iterations:

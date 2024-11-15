@@ -1,26 +1,54 @@
 import pandas as pd
+import re
+import os
+import random
+import csv
 
 def load_csv_file(path):
-    file  = pd.read_csv(path, index_col=None)
+    is_file = os.path.isfile(path)
+    file = None
+    print(is_file)
+    
+    if(is_file):
+        file  = pd.read_csv(path, index_col=None)
+    print(is_file)
     # file = file.to_csv(index=False)
     return file
 
-def extract_input_lines(ascas_file):
-    with open(ascas_file, 'r') as f:
-        lines = f.readlines()
 
-    input_lines = []
-    for line in lines:
-        parts = line.split()
-        if len(parts) >= 4 and parts[1] == 'inpt':
-            input_lines.append(parts[0])
-
-    return input_lines
-def generate_input_file():
-    print("Generating input file")      
-# Example usage:
-# ascas_file = 'c432.ascas'
-# input_lines = extract_input_lines(ascas_file)
-# print(input_lines)
+def save_list_to_csv(list_data, file_path):
+    # print(list_data)
+    df = pd.DataFrame(list_data)
+    df.to_csv(file_path, index=False, header=False)
 
 
+def generate_input_file(circuit, path):
+    list_of_inputs = []
+    headings = ['time']
+    for connection in circuit.input_connections:
+        headings.append(connection.name)
+    list_of_inputs.append(headings)
+    
+    for i in range(5):
+        time = i * 10
+        row = [time]
+        for i in range(len(headings) - 1):
+            value = None
+            random_number = random.randint(0, 4)
+            if (random_number == 0):
+               value = 0 
+            elif (random_number == 1):
+               value = 1
+            elif (random_number == 2):
+               value = 'x'
+            elif (random_number == 3):
+               value =  'z'
+            elif (random_number == 4):
+               value = 'u'
+
+            row.append(value)
+        list_of_inputs.append(row)
+    
+    print(list_of_inputs)
+    save_list_to_csv(list_of_inputs, path)
+    
