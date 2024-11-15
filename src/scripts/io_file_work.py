@@ -7,17 +7,13 @@ import csv
 def load_csv_file(path):
     is_file = os.path.isfile(path)
     file = None
-    print(is_file)
     
     if(is_file):
         file  = pd.read_csv(path, index_col=None)
-    print(is_file)
-    # file = file.to_csv(index=False)
     return file
 
 
 def save_list_to_csv(list_data, file_path):
-    # print(list_data)
     df = pd.DataFrame(list_data)
     df.to_csv(file_path, index=False, header=False)
 
@@ -47,6 +43,6 @@ def generate_input_file(circuit, path):
             row.append(value)
         list_of_inputs.append(row)
     
-    print(list_of_inputs)
+    # print(list_of_inputs)
     save_list_to_csv(list_of_inputs, path)
     

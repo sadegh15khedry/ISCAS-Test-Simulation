@@ -16,7 +16,7 @@ class Circuit:
        
             if gate.output_connection not in self.output_connections:
                 result.append(gate.output_connection)
-        print(self.fanouts)        
+        # print(self.fanouts)        
         for fanout in self.fanouts:
             for output_connection in fanout.output_connections:
                 if output_connection not in self.output_connections and output_connection not in result:
@@ -81,6 +81,10 @@ class Circuit:
             for fanout in self.fanouts:
                         fanout.pass_values(time)        
 
+    def check_delays(self):
+        for gate in self.gates:
+            if gate.delay is None:
+                gate.delay = 0
     
     def draw_circuit(self):
         print("Circuit Representation:\n")

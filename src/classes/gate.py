@@ -92,6 +92,7 @@ class Gate:
         return self.invert_logic_state(xor_output)
 
     def get_not_gate_output(self, inputs):
+        print(len(inputs), self.id)
         if len(inputs) != 1:
             raise ValueError("NOT gate must have exactly one input.")
 
@@ -200,11 +201,10 @@ class Gate:
         for connection in self.input_connections:
                 if connection.level == None:
                     max_input_level = None
-                    # print(f"{connection.name} has None conneciotn")
                     break
                 elif connection.level > max_input_level:
                     max_input_level = connection.level
-                    # print(f"conneciton name: {connection.name} level:{connection.level}")
+
         if max_input_level != None:
             self.level = max_input_level + 1
             self.output_connection.set_level(max_input_level + 1) 
