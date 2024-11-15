@@ -4,7 +4,7 @@ class Connection:
         self.name = name
         self.source = source
         self.destination = destination
-        self.current_value = 'X'
+        self.current_value = 'U'
         self.value_time = 0
         self.history_of_values = []
         self.history_of_times = []

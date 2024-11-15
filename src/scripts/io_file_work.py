@@ -34,17 +34,15 @@ def generate_input_file(circuit, path):
         row = [time]
         for i in range(len(headings) - 1):
             value = None
-            random_number = random.randint(0, 4)
+            random_number = random.randint(0, 3)
             if (random_number == 0):
                value = 0 
             elif (random_number == 1):
                value = 1
             elif (random_number == 2):
-               value = 'x'
+               value = 'U'
             elif (random_number == 3):
-               value =  'z'
-            elif (random_number == 4):
-               value = 'u'
+               value =  'Z'
 
             row.append(value)
         list_of_inputs.append(row)

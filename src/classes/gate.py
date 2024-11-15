@@ -1,4 +1,4 @@
-from logic_state import LogicState
+# from logic_state import LogicState
 class Gate:
     def __init__(self, id, input_connections, output_connection, delay, gate_type):
         self.id = id  # unique identifier for the gate
@@ -19,15 +19,6 @@ class Gate:
         print(f"    Output: {output_name}\n")
         
     def get_and_gate_output(self, inputs):
-        """
-        Calculates the output of an AND gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the AND gate.
-
-        Returns:
-            The output of the AND gate (1, 0, 'X', or 'Z').
-        """
         # If any input is 0, output is 0
         if 0 in inputs:
             return 0
@@ -37,40 +28,22 @@ class Gate:
             # print("all ones")
             return 1
 
-        # If any input is 'X', output is 'X'
-        if 'X' in inputs:
-            return 'X'
+        # If any input is 'U', output is 'U'
+        if 'U' in inputs:
+            return 'U'
 
         # If any input is 'Z', output is 'Z'
         if 'Z' in inputs:
             return 'Z'
 
-        # Default to 'X' for any other unforeseen cases
-        return 'X'
+        # Default to 'U' for any other unforeseen cases
+        return 'U'
 
     def get_nand_gate_output(self, inputs):
-        """
-        Calculates the output of a NAND gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the NAND gate.
-
-        Returns:
-            The output of the NAND gate (1, 0, 'X', or 'Z').
-        """
         and_output = self.get_and_gate_output(inputs)
         return self.invert_logic_state(and_output)
 
     def get_or_gate_output(self, inputs):
-        """
-        Calculates the output of an OR gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the OR gate.
-
-        Returns:
-            The output of the OR gate (1, 0, 'X', or 'Z').
-        """
         # If any input is 1, output is 1
         if 1 in inputs:
             return 1
@@ -79,52 +52,34 @@ class Gate:
         if all(inp == 0 for inp in inputs):
             return 0
 
-        # If any input is 'X', output is 'X'
-        if 'X' in inputs:
-            return 'X'
+        # If any input is 'U', output is 'U'
+        if 'U' in inputs:
+            return 'U'
 
         # If any input is 'Z', output is 'Z'
         if 'Z' in inputs:
             return 'Z'
 
-        # Default to 'X' for any other unforeseen cases
-        return 'X'
+        # Default to 'U' for any other unforeseen cases
+        return 'U'
 
     def get_nor_gate_output(self, inputs):
-        """
-        Calculates the output of a NOR gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the NOR gate.
-
-        Returns:
-            The output of the NOR gate (1, 0, 'X', or 'Z').
-        """
         or_output = self.get_or_gate_output(inputs)
         return self.invert_logic_state(or_output)
 
     def get_xor_gate_output(self, inputs):
-        """
-        Calculates the output of an XOR gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the XOR gate.
-
-        Returns:
-            The output of the XOR gate (1, 0, 'X', or 'Z').
-        """
         count_one = inputs.count(1)
         count_zero = inputs.count(0)
-        count_X = inputs.count('X')
+        count_U = inputs.count('U')
         count_Z = inputs.count('Z')
 
-        # If any input is 'X', output is 'X'
-        if count_X > 0:
-            return 'X'
+        # If any input is 'U', output is 'U'
+        if count_U > 0:
+            return 'U'
 
-        # If any input is 'Z' and not all are 'Z', output is 'X'
+        # If any input is 'Z' and not all are 'Z', output is 'U'
         if count_Z > 0 and count_Z != len(inputs):
-            return 'X'
+            return 'U'
 
         # XOR is true if an odd number of inputs are 1
         if count_one % 2 == 1:
@@ -133,28 +88,10 @@ class Gate:
             return 0
 
     def get_xnor_gate_output(self, inputs):
-        """
-        Calculates the output of an XNOR gate based on its inputs.
-
-        Parameters:
-            inputs (list): The inputs to the XNOR gate.
-
-        Returns:
-            The output of the XNOR gate (1, 0, 'X', or 'Z').
-        """
         xor_output = self.get_xor_gate_output(inputs)
         return self.invert_logic_state(xor_output)
 
     def get_not_gate_output(self, inputs):
-        """
-        Calculates the output of a NOT gate based on its input.
-
-        Parameters:
-            inputs (list): The inputs to the NOT gate.
-
-        Returns:
-            The output of the NOT gate (1, 0, 'X', or 'Z').
-        """
         if len(inputs) != 1:
             raise ValueError("NOT gate must have exactly one input.")
 
@@ -164,23 +101,14 @@ class Gate:
             return 0
         elif inp == 0:
             return 1
-        elif inp == 'X':
-            return 'X'
+        elif inp == 'U':
+            return 'U'
         elif inp == 'Z':
             return 'Z'
         else:
-            return 'X'
+            return 'U'
 
     def get_buf_gate_output(self, inputs):
-        """
-        Calculates the output of a BUF (Buffer) gate based on its input.
-
-        Parameters:
-            inputs (list): The inputs to the BUF gate.
-
-        Returns:
-            The output of the BUF gate (1, 0, 'X', or 'Z').
-        """
         if len(inputs) != 1:
             raise ValueError("BUF gate must have exactly one input.")
 
@@ -189,23 +117,14 @@ class Gate:
 
     @staticmethod
     def invert_logic_state(state):
-        """
-        Inverts the given logic state.
-
-        Parameters:
-            state: The logic state to invert (1, 0, 'X', or 'Z').
-
-        Returns:
-            The inverted logic state (1, 0, 'X', or 'Z').
-        """
         if state == 1:
             return 0
         elif state == 0:
             return 1
-        elif state in ['X', 'Z']:
-            return state  # 'X' and 'Z' remain the same
+        elif state in ['U', 'Z']:
+            return state  
         else:
-            return 'X'
+            return 'U'
     
     def get_inputs_with_delay(self, time):
         inputs = []
@@ -213,7 +132,7 @@ class Gate:
         # print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
         for connection in self.input_connections:
             # print(connection.name)
-            value = 'X'
+            value = 'U'
             # print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
             if connection.value_time < acceptable_value_time: #value is set before the delay
                 # print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
