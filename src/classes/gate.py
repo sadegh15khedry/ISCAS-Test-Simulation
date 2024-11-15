@@ -287,6 +287,6 @@ class Gate:
                     max_input_level = connection.level
                     # print(f"conneciton name: {connection.name} level:{connection.level}")
         if max_input_level != None:
-            self.level = max_input_level
+            self.level = max_input_level + 1
             self.output_connection.set_level(max_input_level + 1) 
 

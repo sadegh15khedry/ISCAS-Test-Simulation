@@ -28,15 +28,22 @@ class Circuit:
         [result2.append(x) for x in result if x not in result2]
         self.net_connections = result2
     
+    def does_all_output_connections_have_level(self):
+        for connection in self.output_connections:
+            if(connection.level == None):
+                return False
+        return True
+    
     def set_levels(self):
-        for connection in self.input_connections:
-            connection.set_level(0) 
-            
-        for fanout in self.fanouts:
-            fanout.set_level()
-            
-        for gate in self.gates:
-            gate.set_level()
+        while self.does_all_output_connections_have_level() == False:
+            for connection in self.input_connections:
+                connection.set_level(0) 
+                
+            for fanout in self.fanouts:
+                fanout.set_level()
+                
+            for gate in self.gates:
+                gate.set_level()
         
 
     def set_max_gate_level(self):
