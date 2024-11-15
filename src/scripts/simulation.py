@@ -26,6 +26,7 @@ def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration
     
         # time_step_inputs = input_file[input_file['time'] == time]
         time_step_inputs = input_file[input_file['time'] == time]
+        # print(input_file)
         circuit.set_circuit_inputs(time_step_inputs, time)
         circuit.pass_values_to_output(time, delay_consideration)
         circuit.print_connections_values()
