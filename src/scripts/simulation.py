@@ -16,7 +16,7 @@ def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration
         generate_input_file(circuit, inputs_path)
         input_file = load_csv_file(inputs_path)
 
-    circuit.check_delays() 
+    circuit.check_delays()
     time = 0
     while time < max_iterations:
 

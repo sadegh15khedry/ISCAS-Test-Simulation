@@ -129,14 +129,11 @@ class Gate:
     
     def get_inputs_with_delay(self, time):
         inputs = []
-        acceptable_value_time = time - self.delay
-        # print(f"time: {time}, delay: {self.delay}, acceptable_value_time: {acceptable_value_time}")    
+        acceptable_value_time = time - self.delay  
         for connection in self.input_connections:
             # print(connection.name)
             value = 'U'
-            # print(f"connection:{connection.name}, time: {time}, delay: {self.delay}, value_time: {connection.value_time}")    
             if connection.value_time < acceptable_value_time: #value is set before the delay
-                # print(f" value has been set yet for the connection {connection.name} at time {connection.value_time} whcih is more than the delay {self.delay}")
                 value = connection.current_value
                         
                 
@@ -170,10 +167,6 @@ class Gate:
         elif delay_consideration == False: # Without delay_consideration
             inputs = self.get_inputs_without_delay(time)
             
-            
-        
-        # print(f"Gate: {self.id} type: {self.gate_type} , Inputs: {inputs}")
-        
         output = None
         if self.gate_type == 'and':
             output = self.get_and_gate_output(inputs)

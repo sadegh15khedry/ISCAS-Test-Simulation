@@ -45,13 +45,11 @@ class Circuit:
             for gate in self.gates:
                 gate.set_level()
         
-
     def set_max_gate_level(self):
         for gate in self.gates:
             if gate.level > self.max_gate_level:
                 self.max_gate_level = gate.level
     
-            
     def set_circuit_inputs(self, input_file, time):
         if input_file.empty:
             return
@@ -61,11 +59,7 @@ class Circuit:
                 value = input_file[connection.name].squeeze()
                 print(f"connection: {connection.name} new value:{value}")
                 connection.update_value(value, time)
-            # for index, row in input_file.iterrows():
-            #     # print(row['id'])
-            #     if int(connection.name) == int(row.id):
-            #         connection.update_value(row['value'], time)
-                    # print(f"Initialized input {connection.name} with value {row['value']} at time step {time}")
+
                     
     def pass_values_to_output(self, time, delay_consideration):
         self.set_max_gate_level()
@@ -94,13 +88,11 @@ class Circuit:
         for conn in self.input_connections:
             print(f"  {conn.name} (ID: {conn.id})")
         print()
-        
         # Print gates and their connections
         print("Gates:")
         for gate in self.gates:
             gate.draw()
             
-        
         # Print fanouts
         if self.fanouts:
             print("Fanouts:")
@@ -108,13 +100,11 @@ class Circuit:
                 fanout.draw()
         else:
             print("No Fanouts in the Circuit.\n")
-        
         # Print primary outputs
         print("Primary Inputs:")
         for conn in self.input_connections:
             print(f"  {conn.name} (ID: {conn.id})")
         print()
-        
         # Print primary outputs
         print("Primary Outputs:")
         for conn in self.output_connections:
