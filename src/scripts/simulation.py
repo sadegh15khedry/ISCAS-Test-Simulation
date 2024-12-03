@@ -6,6 +6,8 @@ def simulation(circuit_path, inputs_path, test_vectors_path, delay_consideration
     circuit = parse_iscas(circuit_path)
     circuit.initialize_net_connections()
     circuit.set_levels()
+    circuit.set_controlability()
+    circuit.set_observability()
     circuit.draw_circuit()
     
     

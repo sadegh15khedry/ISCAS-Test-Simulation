@@ -51,6 +51,15 @@ class Circuit:
             if gate.level > self.max_gate_level:
                 self.max_gate_level = gate.level
     
+    def set_observability(self):
+        for connection in self.output_connections:
+            connection.observability = 0
+    
+    def set_controlability(self):
+        for connection in self.input_connections:
+            connection.controlability_to_zero = 1
+            connection.controlability_to_one = 1
+            
             
     def set_circuit_inputs(self, input_file, time):
         if input_file.empty:
@@ -110,17 +119,22 @@ class Circuit:
             print("No Fanouts in the Circuit.\n")
         
         # Print primary outputs
+        
         print("Primary Inputs:")
         for conn in self.input_connections:
-            print(f"  {conn.name} (ID: {conn.id})")
+            print(f"  {conn.name} (ID: {conn.id}) controlability:({conn.controlability_to_zero} , {conn.controlability_to_one}) observability:{conn.observability}")
         print()
         
         # Print primary outputs
         print("Primary Outputs:")
         for conn in self.output_connections:
-            print(f"  {conn.name} (ID: {conn.id})")
+            print(f"  {conn.name} (ID: {conn.id}) controlability:({conn.controlability_to_zero} , {conn.controlability_to_one}) observability:{conn.observability}")
         print()
-             
+        
+        print("Net connections:")
+        for conn in self.net_connections: 
+            print(f"  {conn.name} (ID: {conn.id}) controlability:({conn.controlability_to_zero} , {conn.controlability_to_one}) observability:{conn.observability}")
+        print()
     def print_inputs(self):
         for input in self.input_connections:
             print(f" input:{input.name}, value: {input.current_value}")

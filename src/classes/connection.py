@@ -10,6 +10,9 @@ class Connection:
         self.history_of_times = []
         self.history_id = 1
         self.level = None
+        self.controlability_to_zero = None
+        self.controlability_to_one = None
+        self.observability = None
         
     def update_value(self, value, time):
         # print(type(time))
