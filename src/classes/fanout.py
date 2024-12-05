@@ -16,7 +16,12 @@ class Fanout:
     def pass_values(self, time):
         for connection in self.output_connections:
             connection.update_value(self.input_connection.current_value ,time)
-            
+    def set_controlability(self):
+        if self.input_connection is not None:
+            for connection in self.output_connections:
+                connection.controlability_to_zero = self.input_connection.controlability_to_zero
+                connection.controlability_to_one = self.input_connection.controlability_to_one
+                
     
     def set_level(self):
         # print(f"fanout {self.id}")

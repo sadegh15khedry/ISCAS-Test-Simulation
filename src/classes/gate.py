@@ -7,6 +7,57 @@ class Gate:
         self.gate_type = gate_type
         self.delay = delay
         self.level = None
+    
+    # def set_controlability():
+    #     c0 = None
+    #     c1 = None
+    #     if self.gate_type == 'and':
+    #         self.set_and_controlability()
+    #     elif self.gate_type == 'nand':
+    #         output = self.get_nand_gate_output(inputs)
+        # elif self.gate_type == 'or':
+        #     output = self.get_or_gate_output(inputs)
+        # elif self.gate_type == 'nor':
+        #     output = self.get_nor_gate_output(inputs)
+        # elif self.gate_type == 'xor':
+        #     output = self.get_xor_gate_output(inputs)
+        # elif self.gate_type == 'xnor':
+        #     output = self.get_xnor_gate_output(inputs)
+        # elif self.gate_type == 'not':
+        #     output = self.get_not_gate_output(inputs)
+        # elif self.gate_type == 'buf':
+        #     output = self.get_buf_gate_output(inputs)
+        # else:
+    
+    # def set_and_controlability(self):
+    #     c0 = in
+    #     c1 = None
+    #     for connection in self.input_connections:
+    #         if
+            
+    #     self.output_connection.controlability_to_one = self.input_connections
+    def can_set_controlability(self):
+        for connection in self.input_connections:
+            if connection.controlability_to_one == None or connection.controlability_to_zero == None:
+                return False
+        return True
+    
+    def set_controlability(self):
+        print(f"set_control for {self.id}")
+        if self.can_set_controlability() == False:
+            return
+        elif self.gate_type == 'nand':
+            # c0 = 0
+            c1 = 10**1000
+            for connection in self.input_connections:
+                c1 = min(c1, connection.controlability_to_zero)
+            # for connection in self.input_connections:
+            #     c0 = c0 + connection.controlability_to_one
+            
+            # c0 += 1
+            c1 += 1
+            # self.output_connection.controlability_to_zero = c0
+            self.output_connection.controlability_to_one = c1  
         
     def draw(self):
         input_names = [f"{conn.name} (ID: {conn.id})" for conn in self.input_connections]
