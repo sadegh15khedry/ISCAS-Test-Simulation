@@ -8,58 +8,158 @@ class Gate:
         self.delay = delay
         self.level = None
     
-    # def set_controlability():
-    #     c0 = None
-    #     c1 = None
-    #     if self.gate_type == 'and':
-    #         self.set_and_controlability()
-    #     elif self.gate_type == 'nand':
-    #         output = self.get_nand_gate_output(inputs)
-        # elif self.gate_type == 'or':
-        #     output = self.get_or_gate_output(inputs)
-        # elif self.gate_type == 'nor':
-        #     output = self.get_nor_gate_output(inputs)
-        # elif self.gate_type == 'xor':
-        #     output = self.get_xor_gate_output(inputs)
-        # elif self.gate_type == 'xnor':
-        #     output = self.get_xnor_gate_output(inputs)
-        # elif self.gate_type == 'not':
-        #     output = self.get_not_gate_output(inputs)
-        # elif self.gate_type == 'buf':
-        #     output = self.get_buf_gate_output(inputs)
-        # else:
-    
-    # def set_and_controlability(self):
-    #     c0 = in
-    #     c1 = None
-    #     for connection in self.input_connections:
-    #         if
-            
-    #     self.output_connection.controlability_to_one = self.input_connections
-    def can_set_controlability(self):
-        for connection in self.input_connections:
-            if connection.controlability_to_one == None or connection.controlability_to_zero == None:
-                return False
-        return True
+
+
     
     def set_controlability(self):
         print(f"set_control for {self.id}")
         if self.can_set_controlability() == False:
             return
-        elif self.gate_type == 'nand':
-            c0 = 0
-            c1 = 10**1000
-            for connection in self.input_connections:
-                c1 = min(c1, connection.controlability_to_zero)
-            for connection in self.input_connections:
-                c0 = c0 + connection.controlability_to_one
             
-            c0 += 1
-            c1 += 1
-            
-            self.output_connection.controlability_to_zero = c0
-            self.output_connection.controlability_to_one = c1  
+        elif self.gate_type == 'and':
+            self.set_and_controlability()
         
+        elif self.gate_type == 'nand':
+            self.set_nand_controlability()
+        
+        elif self.gate_type == 'or':
+            self.set_or_controlability()
+        
+        elif self.gate_type == 'nor':
+            self.set_nor_controlability()
+        
+        elif self.gate_type == 'xor':
+            self.set_xor_controlability()
+        
+        elif self.gate_type == 'xnor':
+            self.set_xnor_controlability()
+        
+        elif self.gate_type == 'not':
+            self.set_not_controlability()
+        
+        elif self.gate_type == 'buf':
+            self.set_buf_controlability()
+        
+        else:
+            raise ValueError(f"Unsupported gate type: {self.gate_type}")
+    def set_xnor_controlability(self):
+        pass
+    def set_xor_controlability(self):
+        pass
+        # c0_0 = 0
+        # c0_1 = 0
+
+        # c1_0 = 0
+        # c1_1 = 0
+        # for connection in self.input_connections:
+        #     c1 = connection.controlability_to_one
+        
+        # for connection in self.input_connections:
+        #     c0 = connection.controlability_to_zero
+            
+        # c0 += 1
+        # c1 += 1
+            
+        # self.output_connection.controlability_to_zero = c0
+        # self.output_connection.controlability_to_one = c1
+       
+    def set_buf_controlability(self):
+        c0 = 0
+        c1 = 0
+        for connection in self.input_connections:
+            c1 = connection.controlability_to_one
+        for connection in self.input_connections:
+            c0 = connection.controlability_to_zero
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1 
+    
+    def set_not_controlability(self):
+        c0 = 0
+        c1 = 0
+        for connection in self.input_connections:
+            c0 = connection.controlability_to_one
+        for connection in self.input_connections:
+            c1 = connection.controlability_to_zero
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1 
+        
+    def set_nor_controlability(self):
+        c0 = 0
+        c1 = 10**1000
+        for connection in self.input_connections:
+            c0 = min(c1, connection.controlability_to_one)
+        for connection in self.input_connections:
+            c1 = c1 + connection.controlability_to_zero
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1      
+    
+    def set_or_controlability(self):
+        c0 = 0
+        c1 = 10**1000
+        for connection in self.input_connections:
+            c1 = min(c1, connection.controlability_to_one)
+        for connection in self.input_connections:
+            c0 = c0 + connection.controlability_to_zero
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1  
+        
+    def set_and_controlability(self):
+        c0 = 10**1000
+        c1 = 0
+        for connection in self.input_connections:
+            c0 = min(c0, connection.controlability_to_zero)
+        for connection in self.input_connections:
+            c1 = c1 + connection.controlability_to_one
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1 
+        
+    def set_nand_controlability(self):
+        c0 = 0
+        c1 = 10**1000
+        for connection in self.input_connections:
+            c1 = min(c1, connection.controlability_to_zero)
+        for connection in self.input_connections:
+            c0 = c0 + connection.controlability_to_one
+            
+        c0 += 1
+        c1 += 1
+            
+        self.output_connection.controlability_to_zero = c0
+        self.output_connection.controlability_to_one = c1  
+    
+    def set_level(self):
+        max_input_level = 0
+        for connection in self.input_connections:
+                if connection.level == None:
+                    max_input_level = None
+                    break
+                elif connection.level > max_input_level:
+                    max_input_level = connection.level
+
+        if max_input_level != None:
+            self.level = max_input_level + 1
+            self.output_connection.set_level(max_input_level + 1) 
+                
     def draw(self):
         input_names = [f"{conn.name} (ID: {conn.id})" for conn in self.input_connections]
         output_name = f"{self.output_connection.name} (ID: {self.output_connection.id})" if self.output_connection else "None"
@@ -241,16 +341,9 @@ class Gate:
         if self.output_connection:
             self.output_connection.update_value(output, time)
 
-    def set_level(self):
-        max_input_level = 0
+    
+    def can_set_controlability(self):
         for connection in self.input_connections:
-                if connection.level == None:
-                    max_input_level = None
-                    break
-                elif connection.level > max_input_level:
-                    max_input_level = connection.level
-
-        if max_input_level != None:
-            self.level = max_input_level + 1
-            self.output_connection.set_level(max_input_level + 1) 
-
+            if connection.controlability_to_one == None or connection.controlability_to_zero == None:
+                return False
+        return True
