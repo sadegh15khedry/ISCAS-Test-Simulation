@@ -47,16 +47,17 @@ class Gate:
         if self.can_set_controlability() == False:
             return
         elif self.gate_type == 'nand':
-            # c0 = 0
+            c0 = 0
             c1 = 10**1000
             for connection in self.input_connections:
                 c1 = min(c1, connection.controlability_to_zero)
-            # for connection in self.input_connections:
-            #     c0 = c0 + connection.controlability_to_one
+            for connection in self.input_connections:
+                c0 = c0 + connection.controlability_to_one
             
-            # c0 += 1
+            c0 += 1
             c1 += 1
-            # self.output_connection.controlability_to_zero = c0
+            
+            self.output_connection.controlability_to_zero = c0
             self.output_connection.controlability_to_one = c1  
         
     def draw(self):
