@@ -92,11 +92,12 @@ class Gate:
         self.output_connection.controlability_to_one = c1 
         
     def set_nor_controlability(self):
-        c0 = 0
-        c1 = 10**1000
+        c0 = 10**1000
+        c1 = 0
         for connection in self.input_connections:
-            c0 = min(c1, connection.controlability_to_one)
+            c0 = min(c0, connection.controlability_to_one)
         for connection in self.input_connections:
+            # print(f"input_cz: { connection.controlability_to_zero}")
             c1 = c1 + connection.controlability_to_zero
             
         c0 += 1
