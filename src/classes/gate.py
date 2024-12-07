@@ -20,22 +20,16 @@ class Gate:
         elif self.gate_type == 'or' or self.gate_type == 'nor':
             self.set_or_nor_observability()
         
+        elif self.gate_type == 'not' or self.gate_type == 'buf':
+            self.set_not_buf_observability()
         
-        # elif self.gate_type == 'xor':
+        # elif self.gate_type == 'xor' or elif self.gate_type == 'xnor':
         #     self.set_xor_observability()
         
-        # elif self.gate_type == 'xnor':
-        #     self.set_xnor_observability()
+        else:
+            raise ValueError(f"Unsupported gate type: {self.gate_type}")
         
-        # elif self.gate_type == 'not':
-        #     self.set_not_observability()
-        
-        # elif self.gate_type == 'buf':
-        #     self.set_buf_observability()
-        
-        # else:
-        #     raise ValueError(f"Unsupported gate type: {self.gate_type}")
-        
+    
         
     def set_controlability(self):
         if self.can_set_controlability() == False:
@@ -67,6 +61,30 @@ class Gate:
         
         else:
             raise ValueError(f"Unsupported gate type: {self.gate_type}")
+    
+    def set_xor_xnor_observability(self, is_xnor=False):
+        for input_connection in self.input_connections:
+            co = self.output_connection.observability
+
+            # Observability depends on the controlability of other inputs to produce even/odd parity
+            for other_input_connection in self.input_connections:
+                if other_input_connection is not input_connection:
+                    c0 = other_input_connection.controlability_to_zero
+                    c1 = other_input_connection.controlability_to_one
+
+                    # Add the minimal cost to produce a parity flip
+                    co += min(c0, c1)
+
+            # Add the gate observability cost
+            co += 1
+
+            # For XOR, observability is calculated as is
+            # For XNOR, invert the parity observability logic
+            input_connection.observability = co if not is_xnor else co
+    
+    def set_not_buf_observability(self):
+        for input_connection in self.input_connections:
+            input_connection.observability = self.output_connection.observability + 1
     
     def set_or_nor_observability(self):
         for input_connection in self.input_connections:

@@ -75,7 +75,6 @@ class Circuit:
             for fanout in self.fanouts:
                 fanout.set_observability()
                 
-    
     def set_controlability(self):
         self.set_max_gate_level()
         
