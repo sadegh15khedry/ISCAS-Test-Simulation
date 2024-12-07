@@ -7,6 +7,52 @@ class Circuit:
         self.fanouts = fanouts
         self.max_gate_level = 0
     
+    def set_stuck_at_fault(self, connection_name, stuck_at):
+        print("another stuck in circuit")
+        done = False
+        for connection in self.input_connections:
+            if connection.name == connection_name:
+                connection.stuck_at = stuck_at
+                done = True
+                print(f"Connection{connection.name}, stuck_at={connection.stuck_at}")
+                break
+        if done == False:
+            for connection in self.net_connections:
+                if connection.name == connection_name:
+                    connection.stuck_at = stuck_at
+                    done = True
+                    print(f"Connection{connection.name}, stuck_at={connection.stuck_at}")
+                    break
+        if done == False:
+            for connection in self.output_connections:
+                if connection.name == connection_name:
+                    connection.stuck_at = stuck_at
+                    print(f"Connection{connection.name}, stuck_at={connection.stuck_at}")
+                    break
+    
+    def remove_stuck_at_fault(self, connection_name):
+        print("another stuck in circuit")
+        done = False
+        for connection in self.input_connections:
+            if connection.name == connection_name:
+                connection.stuck_at = None
+                done = True
+                print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
+                break
+        if done == False:
+            for connection in self.net_connections:
+                if connection.name == connection_name:
+                    connection.stuck_at = None
+                    done = True
+                    print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
+                    break
+        if done == False:
+            for connection in self.output_connections:
+                if connection.name == connection_name:
+                    connection.stuck_at = None
+                    print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
+                    break
+    
     def initialize_net_connections(self):
         result = []
         for gate in self.gates:

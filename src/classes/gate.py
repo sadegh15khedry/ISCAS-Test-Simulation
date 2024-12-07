@@ -7,6 +7,7 @@ class Gate:
         self.gate_type = gate_type
         self.delay = delay
         self.level = None
+        
     
 
 

@@ -17,6 +17,10 @@ def save_list_to_csv(list_data, file_path):
     df = pd.DataFrame(list_data)
     df.to_csv(file_path, index=False, header=False)
 
+def load_fault_file(file_path):
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)  # Parses CSV as list of dictionaries
+        return list(reader)
 
 def generate_input_file(circuit, path):
     list_of_inputs = []

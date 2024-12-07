@@ -13,6 +13,7 @@ class Connection:
         self.controlability_to_zero = None
         self.controlability_to_one = None
         self.observability = None
+        self.stuck_at = None
         
     def update_value(self, value, time):
         # print(type(time))

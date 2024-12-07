@@ -1,8 +1,8 @@
 
 from iscas_parser import parse_iscas
-from io_file_work import load_csv_file, generate_input_file
+from io_file_work import load_csv_file, generate_input_file, load_fault_file
 
-def simulation(simulation_type, circuit_path, inputs_path, test_vectors_path, delay_consideration, max_iterations, input_file_generation):
+def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, test_vectors_path, delay_consideration, max_iterations, input_file_generation):
     
     circuit = parse_iscas(circuit_path)
     circuit.initialize_net_connections()
@@ -13,7 +13,20 @@ def simulation(simulation_type, circuit_path, inputs_path, test_vectors_path, de
     
     if (simulation_type == "PODEM"):
         print("PODEM simulation started")
-    
+        row_count = 1
+        fault_input = load_fault_file(fault_input_path)
+        for row in fault_input:
+            print(f"iteration:{row_count}---------------------------------------")
+            connection_name = row["connection"]
+            stuck_at = row["stuck_at"]
+            print(f"row:{row_count}, connection:{connection_name}, stuck_at:{stuck_at}")
+            circuit.set_stuck_at_fault(connection_name, stuck_at)
+            print("PODEM")
+            circuit.remove_stuck_at_fault(connection_name)
+            row_count += 1
+            print("-------------------------------------------------------")
+            
+            
     elif(simulation_type == 'true_value'):
         input_file = load_csv_file(inputs_path)
         if(input_file is None and input_file_generation == True):
