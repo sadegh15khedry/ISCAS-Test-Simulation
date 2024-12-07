@@ -42,26 +42,61 @@ class Gate:
         
         else:
             raise ValueError(f"Unsupported gate type: {self.gate_type}")
-    def set_xnor_controlability(self):
-        pass
     def set_xor_controlability(self):
-        pass
-        # c0_0 = 0
-        # c0_1 = 0
+        # Initialize for no inputs: even parity = 0 cost, odd parity = large number
+        C_even = 0
+        C_odd = 10**1000  # A large number representing "impossible" initially
 
-        # c1_0 = 0
-        # c1_1 = 0
-        # for connection in self.input_connections:
-        #     c1 = connection.controlability_to_one
+        # Process each input
+        for connection in self.input_connections:
+            c0 = connection.controlability_to_zero
+            c1 = connection.controlability_to_one
+
+            old_even = C_even
+            old_odd = C_odd
+
+            # Compute new C_even and C_odd
+            # Even parity can come from:
+            #   - Old even + this input = 0 (stays even)
+            #   - Old odd + this input = 1 (odd -> even)
+            new_even = min(old_even + c0, old_odd + c1)
+
+            # Odd parity can come from:
+            #   - Old even + this input = 1 (even -> odd)
+            #   - Old odd + this input = 0 (stays odd)
+            new_odd = min(old_even + c1, old_odd + c0)
+
+            C_even, C_odd = new_even, new_odd
+
+        # For XOR:
+        #  Output=0 requires even parity (C_even), Output=1 requires odd parity (C_odd).
+        # Add 1 to represent the gate's inherent controlability cost.
+        self.output_connection.controlability_to_zero = C_even + 1
+        self.output_connection.controlability_to_one = C_odd + 1
         
-        # for connection in self.input_connections:
-        #     c0 = connection.controlability_to_zero
-            
-        # c0 += 1
-        # c1 += 1
-            
-        # self.output_connection.controlability_to_zero = c0
-        # self.output_connection.controlability_to_one = c1
+    def set_xnor_controlability(self):
+    # Same initialization
+        C_even = 0
+        C_odd = 10**1000
+
+        # Process inputs similarly
+        for connection in self.input_connections:
+            c0 = connection.controlability_to_zero
+            c1 = connection.controlability_to_one
+
+            old_even = C_even
+            old_odd = C_odd
+
+            new_even = min(old_even + c0, old_odd + c1)
+            new_odd = min(old_even + c1, old_odd + c0)
+
+            C_even, C_odd = new_even, new_odd
+
+        # For XNOR:
+        #  Output=1 requires even parity (C_even)
+        #  Output=0 requires odd parity (C_odd)
+        self.output_connection.controlability_to_zero = C_odd + 1
+        self.output_connection.controlability_to_one = C_even + 1
        
     def set_buf_controlability(self):
         c0 = 0
