@@ -12,17 +12,14 @@ class Gate:
 
     def set_observability(self):
         if self.can_set_observability() == False:
-            return   
+            return
+        
         elif self.gate_type == 'and' or self.gate_type == 'nand':
             self.set_and_nand_observability()
         
-
+        elif self.gate_type == 'or' or self.gate_type == 'nor':
+            self.set_or_nor_observability()
         
-        # elif self.gate_type == 'or':
-        #     self.set_or_observability()
-        
-        # elif self.gate_type == 'nor':
-        #     self.set_nor_observability()
         
         # elif self.gate_type == 'xor':
         #     self.set_xor_observability()
@@ -70,6 +67,15 @@ class Gate:
         
         else:
             raise ValueError(f"Unsupported gate type: {self.gate_type}")
+    
+    def set_or_nor_observability(self):
+        for input_connection in self.input_connections:
+            co = self.output_connection.observability
+            for other_input_connection in self.input_connections:
+                if other_input_connection is not input_connection:
+                    co += other_input_connection.controlability_to_zero
+            co += 1
+            input_connection.observability = co
         
     def set_and_nand_observability(self):
         
