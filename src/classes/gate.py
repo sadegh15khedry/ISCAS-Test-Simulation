@@ -10,9 +10,37 @@ class Gate:
     
 
 
-    
+    def set_observability(self):
+        if self.can_set_observability() == False:
+            return   
+        elif self.gate_type == 'and' or self.gate_type == 'nand':
+            self.set_and_nand_observability()
+        
+
+        
+        # elif self.gate_type == 'or':
+        #     self.set_or_observability()
+        
+        # elif self.gate_type == 'nor':
+        #     self.set_nor_observability()
+        
+        # elif self.gate_type == 'xor':
+        #     self.set_xor_observability()
+        
+        # elif self.gate_type == 'xnor':
+        #     self.set_xnor_observability()
+        
+        # elif self.gate_type == 'not':
+        #     self.set_not_observability()
+        
+        # elif self.gate_type == 'buf':
+        #     self.set_buf_observability()
+        
+        # else:
+        #     raise ValueError(f"Unsupported gate type: {self.gate_type}")
+        
+        
     def set_controlability(self):
-        print(f"set_control for {self.id}")
         if self.can_set_controlability() == False:
             return
             
@@ -42,6 +70,17 @@ class Gate:
         
         else:
             raise ValueError(f"Unsupported gate type: {self.gate_type}")
+        
+    def set_and_nand_observability(self):
+        
+        for input_connection in self.input_connections:
+            co = self.output_connection.observability
+            for other_input_connection in self.input_connections:
+                if other_input_connection is not input_connection:
+                    co += other_input_connection.controlability_to_one
+            co += 1
+            input_connection.observability = co
+        
     def set_xor_controlability(self):
         # Initialize for no inputs: even parity = 0 cost, odd parity = large number
         C_even = 0
@@ -382,4 +421,9 @@ class Gate:
         for connection in self.input_connections:
             if connection.controlability_to_one == None or connection.controlability_to_zero == None:
                 return False
+        return True
+
+    def can_set_observability(self):
+        if self.output_connection.observability == None:
+            return False
         return True

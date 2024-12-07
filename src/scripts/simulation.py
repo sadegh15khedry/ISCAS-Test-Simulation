@@ -11,9 +11,10 @@ def simulation(simulation_type, circuit_path, inputs_path, test_vectors_path, de
     circuit.set_observability()
     circuit.draw_circuit()
     
+    if (simulation_type == "PODEM"):
+        print("PODEM simulation started")
     
-    
-    if(simulation_type == 'true_value'):
+    elif(simulation_type == 'true_value'):
         input_file = load_csv_file(inputs_path)
         if(input_file is None and input_file_generation == True):
             generate_input_file(circuit, inputs_path)

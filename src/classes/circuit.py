@@ -64,6 +64,17 @@ class Circuit:
         for connection in self.output_connections:
             connection.observability = 0
             
+        for fanout in self.fanouts:
+                fanout.set_observability()
+        
+        for level in range(self.max_gate_level, -1, -1):
+            print("level: ", level)
+            for gate in self.gates:
+                if gate.level == level:
+                    gate.set_observability()
+            for fanout in self.fanouts:
+                fanout.set_observability()
+                
     
     def set_controlability(self):
         self.set_max_gate_level()
@@ -76,8 +87,6 @@ class Circuit:
                 fanout.set_controlability()
         
         for level in range(self.max_gate_level+1):
-            print("level: ", level)
-            # print(f"Level {level} started:\n")
             for gate in self.gates:
                 if gate.level == level:
                     gate.set_controlability()
