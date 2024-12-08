@@ -23,8 +23,8 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             connection_name = row["connection"]
             stuck_at = row["stuck_at"]
             circuit.set_stuck_at_fault(connection_name, int(stuck_at))
-            # test_vector = circuit.run_podem()
-            # print(test_vector)
+            test_vector = circuit.run_podem()
+            print(f"test_vector{test_vector}")
             circuit.remove_stuck_at_fault(connection_name)
             
             
