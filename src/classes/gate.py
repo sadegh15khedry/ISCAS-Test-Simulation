@@ -9,6 +9,28 @@ class Gate:
         self.delay = delay
         self.level = None
 
+    def set_other_inputs(self):
+        if self.gate_type == 'nand':
+            for input_connection in self.input_connections:
+                print(input_connection.current_value)
+                if (input_connection.current_value == 'D' or input_connection.current_value == "D'"):
+                    continue
+                else:
+                    input_connection.current_value = 1
+    
+    def propagate(self):
+        input_values = []
+        for input_connection in self.input_connections:
+            input_values.append(input_connection.current_value)
+        
+        print(input_values)
+            
+        if self.gate_type == 'nand' and 1 in input_values :
+            if 'D' in input_values:
+                self.output_connection.current_value = "D'"
+            elif "D'" in input_values:
+                self.output_connection.current_value = 'D'
+               
     def set_observability(self):
         if not self.can_set_observability():
             return

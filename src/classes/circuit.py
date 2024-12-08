@@ -12,381 +12,73 @@ class Circuit:
         self.initialize_net_connections()
         self.set_levels()
         self.D_frontier = []
-         
+    
+    
     def run_podem(self):
-        return self.podem_iterative()
-
-    def podem_iterative(self):
-        print("Starting PODEM algorithm...")
-        # Activate fault
-        if self.assign_objective_for_fault() == False:
-            print("Failed to activate the fault.")
-            return {}
-
-        # Check if fault is detected after activation
-        if self.fault_detected() == True:
-            print("Fault detected immediately after activation.")
-            return self.extract_test_vector()
-
-        # Attempt to propagate the fault iteratively
-        success = self.fault_propagation_iterative()
-        if success:
-            print("PODEM found a test vector.")
-            return self.extract_test_vector()
-        else:
-            print("PODEM could not find a test vector for the given stuck-at fault.")
-            return {}
+        fanout = self.get_fault_previous_fanout_input()
+        prev_gate = self.get_fault_previous_gate()
+        if(self.fault_connection in self.input_connections):
+             print("fault on input connection")
+             self.fault_on_input_connection()
+             test_vector = self.get_the_end_result_test_vector()
+             return test_vector
+        elif fanout is not None:
+            pass
+            # print("fanout")
+        elif prev_gate is not None: 
+            pass
+            # print(f"previous gate is gate:{prev_gate.id}")
     
-    def fault_propagation_iterative(self):
-        """
-        Attempt to propagate the fault through the circuit iteratively.
-        """
-        print("Attempting fault propagation...")
-        d_front = self.get_D_frontier()
-        print(f"D-Frontier Gates: {[g.output_connection.name for g in d_front]}")
-        if not d_front:
-            print("No D-frontier found. Cannot propagate fault.")
-            return False
-
-        queue = d_front.copy()
-        MAX_ITERATIONS = 1000
-        iteration = 0
-
-        while queue and iteration < MAX_ITERATIONS:
-            g = queue.pop(0)
-            in_vals = [self.get_line_value(i) for i in g.input_connections]
-            if 'D' in in_vals:
-                obj_val = 'D'
-            elif "D'" in in_vals:
-                obj_val = "D'"
-            else:
-                continue  # No D/D' in inputs
-
-            out_conn = g.output_connection
-            print(f"Propagating fault through gate {g.gate_type.upper()} driving {out_conn.name} with objective {obj_val}")
-
-            # Attempt to backtrace the objective
-            success = self.backtrace(out_conn, obj_val)
-            if not success:
-                print(f"Failed to backtrace objective for gate {g.gate_type.upper()} driving {out_conn.name}")
-                continue
-
-            # Simulate and check if fault is detected
-            if self.fault_detected():
-                print("Fault detected after propagation.")
-                return True
-
-            # Update D-Frontier
-            new_d_front = self.get_D_frontier()
-            print(f"New D-Frontier Gates after propagation: {[gate.output_connection.name for gate in new_d_front]}")
-            for new_gate in new_d_front:
-                if new_gate not in queue:
-                    queue.append(new_gate)
-            
-            iteration += 1
-
-        if iteration >= MAX_ITERATIONS:
-            print("Reached maximum iterations. Exiting to prevent infinite loop.")
-        else:
-            print("Failed to propagate fault through all D-frontier gates.")
-        return False
     
-    def assign_objective_for_fault(self):
-        """
-        Assign the objective to activate the fault by setting the faulty connection to the appropriate value.
-        """
-        # print(f"fault_connection: {self.fault_connection.name}, stuck_at:{self.fault_connection.stuck_at}, fault_activation: {self.activation_val}")
-        if self.fault_connection and self.activation_value:
-            print(f"Assigning objective to activate fault: setting {self.fault_connection.name} to {self.activation_value}")
-            # Map symbolic value to logical value before backtracing
-            logical_val = self.activation_value
-            return self.backtrace(self.fault_connection, logical_val)
-        else:
-            print("No fault has been set.")
-            return False
-    
-    def backtrace(self, line, value, visited=None):
-        if visited is None:
-            visited = set()
+    def fault_on_input_connection(self):
+        gate = self.get_gate_by_input_connection(self.fault_connection)
+        gate.set_other_inputs()
+        # print(gate.id)
+        gate.propagate()
         
-        if (line, value) in visited:
-            print(f"Already visited {line.name} with value {value}. Skipping to prevent loop.")
-            return False
-        
-        visited.add((line, value))
-        
-        # Convert symbolic value to logical value if necessary
-        # if isinstance(value, str):
-        #     logical_val = self.symbolic_to_logical(value)
-        # else:
-        #     logical_val = value
-        
-        if self.is_primary_input(line):
-            print(f"reached primary input: {line.id}")
-            if line.current_value not in [0, 1, 'U', 'D', "D'"]:
-                print(f"Backtrace failed: {line.name} already has value {line.current_value}, cannot assign {self.activation_value}")
-                return False
-            if line.current_value == 'U':
-                print(f"Assigning primary input {line.name} to {self.activation_value} for {value}")
-                line.update_value(self.activation_value, time=0)
+        if self.check_if_podem_is_finished() == True:
+            print(f"gate_output: {gate.output_connection.current_value}")
             return True
-
-        g = self.get_gate_for_connection(line)
-        if g is None:
-            print(f"Backtrace failed: No gate drives connection {line.name}")
-            return False
-
-        t = self.gate_type(g)
-        inputs = g.input_connections
-
-        if t == 'not':
-            required_input = self.opposite_logic_state(value)
-            logical_required = self.symbolic_to_logical(required_input)
-            print(f"Backtracing NOT gate: Setting input of {inputs[0].name} to {required_input} (Logical: {logical_required})")
-            return self.backtrace(inputs[0], logical_required, visited)
-
-        if t == 'buf':
-            print(f"Backtracing BUF gate: Setting input of {inputs[0].name} to {self.activation_value}")
-            return self.backtrace(inputs[0], self.activation_value, visited)
-
-        if t in ['and', 'nand', 'or', 'nor']:
-            c_val = self.controlling_val(t)
-            nc_val = self.non_controlling_val(t)
-
-            if value in ['D', "D'"]:
-                # To propagate D/D', set one input to D/D' and others to non-controlling
-                for inp in inputs:
-                    print(f"Backtracing gate {g.gate_type.upper()} for D/D': trying to set {value} to {inp.name}")
-                    # Save current state
-                    saved_values = {c: c.current_value for c in inputs}
-                    
-                    # Assign non-controlling values to other inputs
-                    can_assign = True
-                    for other in inputs:
-                        if other is not inp and other.current_value not in [nc_val, 'U']:
-                            can_assign = False
-                            print(f"Cannot assign non-controlling value to {other.name}, already has {other.current_value}")
-                            break
-                    if not can_assign:
-                        continue
-                    
-                    for other in inputs:
-                        if other is not inp and other.current_value == 'U':
-                            print(f"Assigning non-controlling value {nc_val} to {other.name}")
-                            other.update_value(nc_val, time=0)
-                    
-                    # Backtrace the chosen input with D/D'
-                    if self.backtrace(inp, value, visited):
-                        return True
-                    
-                    # Revert assignments
-                    for other in inputs:
-                        other.update_value(saved_values[other], time=0)
-            else:
-                if value == c_val:
-                    # Set one input to controlling value and others to non-controlling
-                    for candidate in inputs:
-                        print(f"Backtracing gate {g.gate_type.upper()} for normal objective: trying to set {c_val} to {candidate.name}")
-                        # Save current state
-                        saved_values = {c: c.current_value for c in inputs}
-                        
-                        # Assign non-controlling values to other inputs
-                        can_assign = True
-                        for other in inputs:
-                            if other is not candidate and other.current_value not in [nc_val, 'U']:
-                                can_assign = False
-                                print(f"Cannot assign non-controlling value to {other.name}, already has {other.current_value}")
-                                break
-                        if not can_assign:
-                            continue
-                        
-                        for other in inputs:
-                            if other is not candidate and other.current_value == 'U':
-                                print(f"Assigning non-controlling value {nc_val} to {other.name}")
-                                other.update_value(nc_val, time=0)
-                        
-                        # Backtrace the chosen input
-                        if self.backtrace(candidate, c_val, visited):
-                            return True
-                        
-                        # Revert assignments
-                        for other in inputs:
-                            other.update_value(saved_values[other], time=0)
-                elif value == nc_val:
-                    # Set all inputs to non-controlling value
-                    print(f"Backtracing gate {g.gate_type.upper()} for normal objective: setting all inputs to {nc_val}")
-                    can_assign = True
-                    for inp in inputs:
-                        if inp.current_value not in [nc_val, 'U']:
-                            can_assign = False
-                            print(f"Cannot assign non-controlling value to {inp.name}, already has {inp.current_value}")
-                            break
-                    if not can_assign:
-                        return False
-                    for inp in inputs:
-                        if inp.current_value == 'U':
-                            print(f"Assigning non-controlling value {nc_val} to {inp.name}")
-                            inp.update_value(nc_val, time=0)
-                    return True
-        return False
+        
     
-    def opposite_logic_state(self, state):
-        """
-        Get the opposite logic state.
-        """
-        if state == 1:
-            return 0
-        elif state == 0:
-            return 1
-        elif state == 'D':
-            return "D'"
-        elif state == "D'":
-            return 'D'
-        elif state in ['U', 'Z']:
-            return state
-        else:
-            return 'U'
-
-    def opposite(self, val):
-        """
-        Alias for opposite_logic_state.
-        """
-        return self.opposite_logic_state(val)
-
-    def is_primary_input(self, connection):
-        """
-        Check if the connection is a primary input.
-        """
-        return connection in self.input_connections
-
-    def fault_detected(self):
-        for output in self.output_connections:
-            if output.current_value in ['D', "D'"]:
-                print(f"Fault detected at output {output.name}: {output.current_value}")
-                return True
-            elif output.current_value == 'D':
-                print(f"Fault detected at output {output.name}: D (Logical: 1)")
-                return True
-            elif output.current_value == "D'":
-                print(f"Fault detected at output {output.name}: D' (Logical: 0)")
-                return True
-        return False
-
+    def get_the_end_result_test_vector(self):
+        result = []
+        for connection in self.input_connections:
+            if connection.current_value == "D":
+                connection.current_value = 1
+            elif connection.current_value == "D'":
+                connection.current_value = 0
+            elif connection.current_value == "U":
+                connection.current_value = "X"
+            row = {"connection":connection.name, "value":connection.current_value}
+            result.append(row)
+        return result
     
-    def all_assigned(self):
-        """
-        Check if all primary inputs have been assigned a definite value (0 or 1).
-        """
-        return all(conn.current_value in [0, 1] for conn in self.input_connections)
-
-    def get_gate_for_connection(self, connection):
-        """
-        Get the gate that drives the given connection.
-        """
-        return connection.source if hasattr(connection, 'source') else None
-
-    def gate_type(self, gate):
-        """
-        Get the type of the gate in lowercase.
-        """
-        return gate.gate_type.lower()
-
-    def get_line_value(self, connection):
-        """
-        Get the current value of the connection.
-        """
-        return connection.current_value
+    def check_if_podem_is_finished(self):
+        for connection in self.output_connections:
+            if connection.current_value == 'D' or connection.current_value == "D'":
+                return True
     
-    def get_D_frontier(self):
-        d_front = []
+    def get_fault_previous_fanout_input(self):
+        # print("gate check")
+        for fanout in self.fanouts:
+            for output in fanout.output_connections:
+                if output == self.fault_connection:
+                    return output.input_connection
+        
+        
+    def get_gate_by_input_connection(self, gate_input_connection):
         for gate in self.gates:
-            input_values = [self.get_line_value(input_conn) for input_conn in gate.input_connections]
-            output_value = self.get_line_value(gate.output_connection)
-            if ('D' in input_values or "D'" in input_values) and output_value not in ['D', "D'"]:
-                d_front.append(gate)
-        print(f"d_front: {d_front}")
-        return d_front
-   
-    def symbolic_to_logical(self, value):
-        """
-        Convert symbolic value to logical value.
-        'D' -> 1
-        "D'" -> 0
-        Otherwise, return the value as is.
-        """
-        if value == 'D':
-            return 1
-        elif value == "D'":
-            return 0
-        else:
-            return value
-
-
-    def controlling_val(self, gate_type):
-        """
-        Get the controlling value for the given gate type.
-        
-        Controlling values are:
-        - AND/NAND: 1
-        - OR/NOR: 1
-        """
-        controlling_values = {
-            'and': 1,
-            'nand': 1,
-            'or': 1,
-            'nor': 1
-            # Add more gate types if necessary
-        }
-        return controlling_values.get(gate_type, None)
-
-    def non_controlling_val(self, gate_type):
-        """
-        Get the non-controlling value for the given gate type.
-        
-        Non-controlling values are:
-        - AND/NAND: 0
-        - OR/NOR: 0
-        """
-        non_controlling_values = {
-            'and': 0,
-            'nand': 0,
-            'or': 0,
-            'nor': 0
-            # Add more gate types if necessary
-        }
-        return non_controlling_values.get(gate_type, None)
-
-    def extract_test_vector(self):
-        """
-        Extract the test vector from the primary input connections.
-        """
-        test_vector = {}
-        for c in self.input_connections:
-            val = c.current_value
-            if val == 'D':
-                logical_val = 1
-            elif val == "D'":
-                logical_val = 0
-            elif val == 'U':
-                logical_val = 0  # default to 0 for don't-care
-            else:
-                logical_val = val  # assume it's already a logical value
-            test_vector[c.name] = logical_val
-        print("PODEM found a test vector:", test_vector)
-        return test_vector
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+            for input in gate.input_connections:
+                if input == gate_input_connection:
+                    return gate
+                
+    def get_fault_previous_gate(self):
+        print("gate check")
+        for gate in self.gates:
+            if gate.output_connection == self.fault_connection:
+                return gate
+            
     
     def set_stuck_at_fault(self, connection_name, stuck_at):
         done = False
@@ -395,8 +87,10 @@ class Circuit:
                 connection.stuck_at = stuck_at
                 self.fault_connection = connection
                 self.set_fault_activation_value(stuck_at)
+                self.fault_connection.current_value = self.activation_value
+                connection.current_value = self.activation_value
                 done = True
-                print(f"Connection {connection.name} (ID: {connection.id}), stuck_at={connection.stuck_at} activation_value={self.activation_value}")
+                print(f"Connection {connection.name} (ID: {connection.id}), stuck_at={connection.stuck_at} value:{self.fault_connection.current_value} activation_value={self.activation_value}")
                 break
         
         if not done:
@@ -537,7 +231,6 @@ class Circuit:
             self.activation_value = "D'"
             # self.fault_connection.current_value = 0
     
-    
     def draw_circuit(self):
         print("Circuit Representation:\n")
         
@@ -603,3 +296,6 @@ class Circuit:
         self.print_net_connections()
         print(" ")
         self.print_outputs()
+     
+     
+     

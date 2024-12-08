@@ -16,6 +16,7 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
         print("PODEM simulation started")
         row_count = 1
         fault_input = load_fault_file(fault_input_path)
+        test_vectors = []
         
         for row in fault_input:
             print(f"iteration:{row_count}---------------------------------------")
@@ -24,14 +25,17 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             stuck_at = row["stuck_at"]
             circuit.set_stuck_at_fault(connection_name, int(stuck_at))
             test_vector = circuit.run_podem()
-            print(f"test_vector{test_vector}")
+            test_vectors.append(test_vector)
+            print(f"test_vector: {test_vector}")
             circuit.remove_stuck_at_fault(connection_name)
             
             
             row_count += 1
             print("-------------------------------------------------------")
             
-            
+        print("-----------------------------------------------------------------")
+        print("PODEM simulation finished")
+        print(test_vectors)
     elif(simulation_type == 'true_value'):
         input_file = load_csv_file(inputs_path)
         if(input_file is None and input_file_generation == True):
