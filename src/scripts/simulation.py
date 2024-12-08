@@ -1,6 +1,6 @@
 
 from iscas_parser import parse_iscas
-from io_file_work import load_csv_file, generate_input_file, load_fault_file
+from io_file_work import load_csv_file, generate_input_file, load_fault_file, save_test_vectors
 
 
 def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, test_vectors_path, delay_consideration, max_iterations, input_file_generation):
@@ -35,7 +35,7 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             
         print("-----------------------------------------------------------------")
         print("PODEM simulation finished")
-        print(test_vectors)
+        save_test_vectors(test_vectors, test_vectors_path)
     elif(simulation_type == 'true_value'):
         input_file = load_csv_file(inputs_path)
         if(input_file is None and input_file_generation == True):

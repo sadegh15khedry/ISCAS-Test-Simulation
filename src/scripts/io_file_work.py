@@ -22,6 +22,45 @@ def load_fault_file(file_path):
         reader = csv.DictReader(file)  # Parses CSV as list of dictionaries
         return list(reader)
 
+import csv
+import os
+
+import csv
+import os
+
+def save_test_vectors(test_vectors, test_vectors_path):
+    """
+    Save test vectors to a CSV file with an additional 'id' column.
+
+    Args:
+        test_vectors (list of list of dict): The test vectors to save.
+        test_vectors_path (str): The path to the CSV file to save the test vectors.
+    """
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(test_vectors_path), exist_ok=True)
+    
+    # Extract all unique connections for CSV headers
+    connections = sorted({tv['connection'] for vector in test_vectors for tv in vector})
+    headers = ['id'] + connections  # Add 'id' column as the first header
+    
+    # Create a list of dictionaries with connection values for each vector
+    rows = []
+    for i, vector in enumerate(test_vectors, start=1):
+        row = {conn: None for conn in connections}  # Initialize row with None for all connections
+        row['id'] = i  # Assign a unique id to each vector
+        for tv in vector:
+            row[tv['connection']] = tv['value']    # Fill in the value for each connection
+        rows.append(row)
+    
+    # Write to CSV
+    with open(test_vectors_path, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=headers)
+        writer.writeheader()  # Write headers
+        writer.writerows(rows)  # Write rows
+
+    print(f"Test vectors saved to {test_vectors_path}")
+
+
 def generate_input_file(circuit, path):
     list_of_inputs = []
     headings = ['time']
