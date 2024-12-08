@@ -30,7 +30,12 @@ class Gate:
                 self.output_connection.current_value = "D'"
             elif "D'" in input_values:
                 self.output_connection.current_value = 'D'
-               
+    
+    
+        # if self.output_connection.current_value == "D'":
+                        
+
+                                           
     def set_observability(self):
         if not self.can_set_observability():
             return

@@ -15,21 +15,39 @@ class Circuit:
     
     
     def run_podem(self):
-        fanout = self.get_fault_previous_fanout_input()
-        prev_gate = self.get_fault_previous_gate()
+        
+            
+        test_vector = None
         if(self.fault_connection in self.input_connections):
              print("fault on input connection")
              self.fault_on_input_connection()
              test_vector = self.get_the_end_result_test_vector()
              return test_vector
-        elif fanout is not None:
-            pass
-            # print("fanout")
-        elif prev_gate is not None: 
-            pass
-            # print(f"previous gate is gate:{prev_gate.id}")
+        else:
+            self.default_podem()
+            test_vector = self.get_the_end_result_test_vector()
+            return test_vector
     
+    def default_podem(self):
+
+        prev_gate = self.get_fault_previous_gate()
+        if prev_gate is not None:
+            self.backtrace_from_output(prev_gate)
+            print(f"previous gate is gate:{prev_gate.id}")
+            
+                # elif fanout is not None:
+        #     pass
+        
+        
+        
+        if self.is_all_values_justified() == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
+            
+            print("algoritm is finished")    
+        
     
+       
+            
+            
     def fault_on_input_connection(self):
         gate = self.get_gate_by_input_connection(self.fault_connection)
         gate.set_other_inputs()
@@ -39,7 +57,18 @@ class Circuit:
         if self.check_if_podem_is_finished() == True:
             print(f"gate_output: {gate.output_connection.current_value}")
             return True
-        
+    
+    def backtrace_from_output(self, gate):
+        if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
+            min_c0_connection = None
+            min_c0 = 10**100
+            for connection in gate.input_connections:
+                if connection.controlability_to_zero < min_c0:
+                    min_c0_connection = connection
+                    min_c0 = connection.controlability_to_zero      
+            min_c0_connection.current_value = 0
+            print (f"backtracking gate:{gate.id}, input:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
+        # elif gate.gate_type == 'nand' and self.output_connection.current_value == "D'":   
     
     def get_the_end_result_test_vector(self):
         result = []
@@ -65,8 +94,7 @@ class Circuit:
             for output in fanout.output_connections:
                 if output == self.fault_connection:
                     return output.input_connection
-        
-        
+         
     def get_gate_by_input_connection(self, gate_input_connection):
         for gate in self.gates:
             for input in gate.input_connections:
@@ -74,12 +102,10 @@ class Circuit:
                     return gate
                 
     def get_fault_previous_gate(self):
-        print("gate check")
         for gate in self.gates:
             if gate.output_connection == self.fault_connection:
                 return gate
             
-    
     def set_stuck_at_fault(self, connection_name, stuck_at):
         done = False
         for connection in self.input_connections + self.net_connections + self.output_connections:
@@ -96,27 +122,31 @@ class Circuit:
         if not done:
             print(f"Connection with identifier {connection_name} not found in the circuit.")
 
-    def remove_stuck_at_fault(self, connection_name):
+    
+        
+    def has_fault_reached_outputs(self):
+        for output in self.output_connections:
+            if output.current_value not in ['D', "D'"]:
+                return True
+        return False    
+    
+    def is_all_values_justified(self):
+        return True
+        
+    def has_assigned_values_to_inputs(self):
+        result = False
+        for input in self.input_connections:
+            if  input.current_value != 'U':
+                return True
+        return False
+    
+    
+    def clear_faulty_circuit(self):
         done = False
-        for connection in self.input_connections:
-            if connection.name == connection_name:
-                connection.stuck_at = None
-                done = True
-                # print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
-                break
-        if done == False:
-            for connection in self.net_connections:
-                if connection.name == connection_name:
-                    connection.stuck_at = None
-                    done = True
-                    # print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
-                    break
-        if done == False:
-            for connection in self.output_connections:
-                if connection.name == connection_name:
-                    connection.stuck_at = None
-                    # print(f"Connection{connection.name}, stuck_at={connection.stuck_at} removed")
-                    break
+        for connection in self.input_connections + self.output_connections + self.net_connections:
+            connection.stuck_at = None
+            connection.current_value = "U"
+    
     
     def initialize_net_connections(self):
         result = []

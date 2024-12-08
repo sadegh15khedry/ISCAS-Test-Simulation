@@ -22,20 +22,8 @@ def load_fault_file(file_path):
         reader = csv.DictReader(file)  # Parses CSV as list of dictionaries
         return list(reader)
 
-import csv
-import os
-
-import csv
-import os
 
 def save_test_vectors(test_vectors, test_vectors_path):
-    """
-    Save test vectors to a CSV file with an additional 'id' column.
-
-    Args:
-        test_vectors (list of list of dict): The test vectors to save.
-        test_vectors_path (str): The path to the CSV file to save the test vectors.
-    """
     # Ensure the directory exists
     os.makedirs(os.path.dirname(test_vectors_path), exist_ok=True)
     
