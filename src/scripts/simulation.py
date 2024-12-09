@@ -13,7 +13,7 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
     circuit.draw_circuit()
     
     if (simulation_type == "PODEM"):
-        print("PODEM simulation started")
+        print("PODEM simulations started")
         row_count = 1
         fault_input = load_fault_file(fault_input_path)
         test_vectors = []
@@ -34,10 +34,10 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             print("-------------------------------------------------------")
             
         print("-----------------------------------------------------------------")
-        print("PODEM simulation finished")
+        print("PODEM simulations finished")
         
-        # if test_vectors is not None:
-        #     save_test_vectors(test_vectors, test_vectors_path)
+        if test_vectors is not None:
+            save_test_vectors(test_vectors, test_vectors_path)
     
     elif(simulation_type == 'true_value'):
         input_file = load_csv_file(inputs_path)

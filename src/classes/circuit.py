@@ -12,42 +12,43 @@ class Circuit:
         self.initialize_net_connections()
         self.set_levels()
         self.D_frontier = []
-    
+        self.podem_state = 'initial'
+        self.is_all_values_justified = True
     
     def run_podem(self):
         
             
         test_vector = None
         if(self.fault_connection in self.input_connections):
-             print("fault on input connection")
-             self.fault_on_input_connection()
-             test_vector = self.get_the_end_result_test_vector()
-             return test_vector
+            self.podem_state = 'forward'
         else:
-            self.default_podem()
-            test_vector = self.get_the_end_result_test_vector()
-            return test_vector
+            self.podem_state = 'backward'
+            
+        print(f"state: {self.podem_state}")
+        self.iterative_podem()    
+        test_vector = self.get_the_end_result_test_vector()
+        return test_vector
     
-    def default_podem(self):
+    def iterative_podem(self): 
+        is_podem_over = self.is_podem_over()
+        while (is_podem_over == False):
+            print("inside iterative")
+            if self.podem_state == 'forward':
+                gate = self.get_gate_by_input_connection(self.fault_connection)
+                self.set_other_inputs(gate)
+                self.propagate(gate)
+                
+            elif self.podem_state == 'backward':
+                prev_gate = self.get_fault_previous_gate()
+                if prev_gate is not None:
+                    self.backtrace_from_output(prev_gate)
+                    print(f"previous gate is gate:{prev_gate.id}")
+            
+            is_podem_over = self.is_podem_over()
+        print("Podem ended")
+        
+                
 
-        prev_gate = self.get_fault_previous_gate()
-        if prev_gate is not None:
-            self.backtrace_from_output(prev_gate)
-            print(f"previous gate is gate:{prev_gate.id}")
-        
-        
-        
-        if self.is_all_values_justified() == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
-            print("algoritm is finished")    
-        
-    def fault_on_input_connection(self):
-        gate = self.get_gate_by_input_connection(self.fault_connection)
-        self.set_other_inputs(gate)
-        self.propagate(gate)
-        
-        if self.check_if_fault_reached_output() == True:
-            print(f"gate_output: {gate.output_connection.current_value}")
-            return True
     
     def backtrace_from_output(self, gate):
         if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
@@ -133,8 +134,17 @@ class Circuit:
             min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
             min_c0_connection.current_value = 0
     
+    def is_podem_over(self):
+        print(self.has_assigned_values_to_inputs())
+        print()
+        
+        if self.is_all_values_justified == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
+        # if self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs():
+            return True
+        return False
     
     def set_other_inputs(self, gate):
+        print('inside.....')
         if gate.gate_type == 'nand' or gate.gate_type == 'and':
             for input_connection in gate.input_connections:
                 # print(input_connection.current_value)
@@ -157,12 +167,10 @@ class Circuit:
                     continue
                 else:
                     input_connection.current_value = 0
-            
-    
+     
     def propagate(self, gate):
-        input_values = []
-        for input_connection in gate.input_connections:
-            input_values.append(input_connection.current_value)
+        input_values = self.get_input_list(gate)
+        
         
         print(input_values)
         
@@ -318,19 +326,24 @@ class Circuit:
     
     def has_fault_reached_outputs(self):
         for output in self.output_connections:
-            if output.current_value not in ['D', "D'"]:
+            if output.current_value in ['D', "D'"]:
                 return True
         return False    
-    
-    def is_all_values_justified(self):
-        return True
         
     def has_assigned_values_to_inputs(self):
-        result = False
-        for input in self.input_connections:
-            if  input.current_value != 'U':
+        input_list = []
+        for input_connection in self.input_connections:
+                input_list.append(input_connection.current_value)       
+    
+        if 0 in input_list or 1 in input_list:
                 return True
         return False
+    
+    def get_input_list(self, gate):
+        input_values = []
+        for input_connection in gate.input_connections:
+                input_values.append(input_connection.current_value)       
+        return input_values
     
     def clear_faulty_circuit(self):
         done = False
