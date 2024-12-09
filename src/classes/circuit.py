@@ -34,23 +34,18 @@ class Circuit:
         if prev_gate is not None:
             self.backtrace_from_output(prev_gate)
             print(f"previous gate is gate:{prev_gate.id}")
-            
-                # elif fanout is not None:
-        #     pass
         
         
         
         if self.is_all_values_justified() == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
-            
             print("algoritm is finished")    
         
     def fault_on_input_connection(self):
         gate = self.get_gate_by_input_connection(self.fault_connection)
-        gate.set_other_inputs()
-        # print(gate.id)
-        gate.propagate()
+        self.set_other_inputs(gate)
+        self.propagate(gate)
         
-        if self.check_if_podem_is_finished() == True:
+        if self.check_if_fault_reached_output() == True:
             print(f"gate_output: {gate.output_connection.current_value}")
             return True
     
@@ -137,9 +132,137 @@ class Circuit:
                 input.current_value = 1
             min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
             min_c0_connection.current_value = 0
+    
+    
+    def set_other_inputs(self, gate):
+        if gate.gate_type == 'nand' or gate.gate_type == 'and':
+            for input_connection in gate.input_connections:
+                # print(input_connection.current_value)
+                if (input_connection.current_value == 'D' or input_connection.current_value == "D'"):
+                    continue
+                else:
+                    input_connection.current_value = 1
+        elif gate.gate_type == 'nor' or gate.gate_type == 'or':
+            for input_connection in gate.input_connections:
+                # print(input_connection.current_value)
+                if (input_connection.current_value == 'D' or input_connection.current_value == "D'"):
+                    continue
+                else:
+                    input_connection.current_value = 0
+        
+        elif gate.gate_type == 'xor' or gate.gate_type == 'xnor':
+            for input_connection in gate.input_connections:
+                # print(input_connection.current_value)
+                if (input_connection.current_value == 'D' or input_connection.current_value == "D'"):
+                    continue
+                else:
+                    input_connection.current_value = 0
             
-            
-            
+    
+    def propagate(self, gate):
+        input_values = []
+        for input_connection in gate.input_connections:
+            input_values.append(input_connection.current_value)
+        
+        print(input_values)
+        
+        if gate.gate_type == 'nand':
+            if 'D' in input_values and 0 not in input_values:
+                # If there's both a 1 and a D, output is D'
+                gate.output_connection.current_value = "D'"
+            elif "D'" in input_values and 0 not in input_values:
+                # If there's both a 1 and a D', output is D
+                gate.output_connection.current_value = 'D'
+            elif all(value == 1 for value in input_values):
+                # If all inputs are 1, output is 0 for NAND
+                gate.output_connection.current_value = 0
+            else:
+                # Otherwise, output is 1
+                gate.output_connection.current_value = 1
+
+        elif gate.gate_type == 'and'and 0 not in input_values:
+            if 'D' in input_values:
+                # If any input is D, output is D
+                gate.output_connection.current_value = 'D'
+            elif "D'" in input_values and 0 not in input_values:
+                # If any input is D', output is D'
+                gate.output_connection.current_value = "D'"
+            elif all(value == 1 for value in input_values):
+                # If all inputs are 1, output is 1 for AND
+                gate.output_connection.current_value = 1
+            else:
+                # Otherwise, output is 0
+                gate.output_connection.current_value = 0
+        elif gate.gate_type == 'or':
+            if 'D' in input_values:
+                gate.output_connection.current_value = 'D'
+            elif "D'" in input_values:
+                gate.output_connection.current_value = "D'"
+            elif any(value == 1 for value in input_values):
+                gate.output_connection.current_value = 1
+            else:
+                gate.output_connection.current_value = 0
+
+        elif gate.gate_type == 'nor':
+            if 'D' in input_values:
+                gate.output_connection.current_value = "D'"
+            elif "D'" in input_values:
+                gate.output_connection.current_value = 'D'
+            elif any(value == 1 for value in input_values):
+                gate.output_connection.current_value = 0
+            else:
+                gate.output_connection.current_value = 1
+
+        elif gate.gate_type == 'xor':
+            d_count = input_values.count('D')
+            d_prime_count = input_values.count("D'")
+            one_count = input_values.count(1)
+            if (d_count + one_count) % 2 == 1:
+                gate.output_connection.current_value = 'D'
+            elif (d_prime_count + one_count) % 2 == 1:
+                gate.output_connection.current_value = "D'"
+            elif sum(value == 1 for value in input_values) % 2 == 1:
+                gate.output_connection.current_value = 1
+            else:
+                gate.output_connection.current_value = 0
+
+        elif gate.gate_type == 'xnor':
+            d_count = input_values.count('D')
+            d_prime_count = input_values.count("D'")
+            one_count = input_values.count(1)
+            if (d_count + one_count) % 2 == 0:
+                gate.output_connection.current_value = 'D'
+            elif (d_prime_count + one_count) % 2 == 0:
+                gate.output_connection.current_value = "D'"
+            elif sum(value == 1 for value in input_values) % 2 == 0:
+                gate.output_connection.current_value = 1
+            else:
+                gate.output_connection.current_value = 0
+
+        elif gate.gate_type == 'not':
+            if input_values[0] == 'D':
+                gate.output_connection.current_value = "D'"
+            elif input_values[0] == "D'":
+                gate.output_connection.current_value = 'D'
+            elif input_values[0] == 1:
+                gate.output_connection.current_value = 0
+            elif input_values[0] == 0:
+                gate.output_connection.current_value = 1
+            else:
+                gate.output_connection.current_value = 1 if input_values[0] == 0 else 0
+
+        elif gate.gate_type == 'buf':
+            if input_values[0] == 'D':
+                gate.output_connection.current_value = 'D'
+            elif input_values[0] == "D'":
+                gate.output_connection.current_value = "D'"
+            elif input_values[0] == 1:
+                gate.output_connection.current_value = 1
+            elif input_values[0] == 0:
+                gate.output_connection.current_value = 0
+            else:
+                gate.output_connection.current_value = input_values[0]
+                      
     def get_the_end_result_test_vector(self):
         result = []
         for connection in self.input_connections:
@@ -153,10 +276,11 @@ class Circuit:
             result.append(row)
         return result
     
-    def check_if_podem_is_finished(self):
+    def check_if_fault_reached_output(self):
         for connection in self.output_connections:
             if connection.current_value == 'D' or connection.current_value == "D'":
                 return True
+        return False
     
     def get_fault_previous_fanout_input(self):
         # print("gate check")
