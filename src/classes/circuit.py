@@ -44,10 +44,6 @@ class Circuit:
             
             print("algoritm is finished")    
         
-    
-       
-            
-            
     def fault_on_input_connection(self):
         gate = self.get_gate_by_input_connection(self.fault_connection)
         gate.set_other_inputs()
@@ -68,7 +64,9 @@ class Circuit:
                     min_c0 = connection.controlability_to_zero      
             min_c0_connection.current_value = 0
             print (f"backtracking gate:{gate.id}, input:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
-        # elif gate.gate_type == 'nand' and self.output_connection.current_value == "D'":   
+        elif gate.gate_type == 'nand' and gate.output_connection.current_value == "D'":
+            for input in gate.input_connections:
+                input.current_value = 1 
     
     def get_the_end_result_test_vector(self):
         result = []
@@ -121,9 +119,7 @@ class Circuit:
         
         if not done:
             print(f"Connection with identifier {connection_name} not found in the circuit.")
-
     
-        
     def has_fault_reached_outputs(self):
         for output in self.output_connections:
             if output.current_value not in ['D', "D'"]:
@@ -140,13 +136,11 @@ class Circuit:
                 return True
         return False
     
-    
     def clear_faulty_circuit(self):
         done = False
         for connection in self.input_connections + self.output_connections + self.net_connections:
             connection.stuck_at = None
             connection.current_value = "U"
-    
     
     def initialize_net_connections(self):
         result = []
@@ -326,6 +320,4 @@ class Circuit:
         self.print_net_connections()
         print(" ")
         self.print_outputs()
-     
-     
      
