@@ -14,13 +14,14 @@ class Circuit:
         self.D_frontier = []
         self.podem_state = 'initial'
         self.is_all_values_justified = True
-    
+        self.feed_forward_gates = []
     def run_podem(self):
         
             
         test_vector = None
         if(self.fault_connection in self.input_connections):
             self.podem_state = 'forward'
+            self.feed_forward_gates.append(self.get_gate_by_input_connection(self.fault_connection)) 
         else:
             self.podem_state = 'backward'
             
@@ -32,9 +33,8 @@ class Circuit:
     def iterative_podem(self): 
         is_podem_over = self.is_podem_over()
         while (is_podem_over == False):
-            print("inside iterative")
             if self.podem_state == 'forward':
-                gate = self.get_gate_by_input_connection(self.fault_connection)
+                gate = self.feed_forward_gates.pop()
                 self.set_other_inputs(gate)
                 self.propagate(gate)
                 
@@ -46,9 +46,6 @@ class Circuit:
             
             is_podem_over = self.is_podem_over()
         print("Podem ended")
-        
-                
-
     
     def backtrace_from_output(self, gate):
         if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
@@ -135,16 +132,11 @@ class Circuit:
             min_c0_connection.current_value = 0
     
     def is_podem_over(self):
-        print(self.has_assigned_values_to_inputs())
-        print()
-        
         if self.is_all_values_justified == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
-        # if self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs():
             return True
         return False
     
     def set_other_inputs(self, gate):
-        print('inside.....')
         if gate.gate_type == 'nand' or gate.gate_type == 'and':
             for input_connection in gate.input_connections:
                 # print(input_connection.current_value)
@@ -172,7 +164,7 @@ class Circuit:
         input_values = self.get_input_list(gate)
         
         
-        print(input_values)
+        # print(input_values)
         
         if gate.gate_type == 'nand':
             if 'D' in input_values and 0 not in input_values:
@@ -270,7 +262,17 @@ class Circuit:
                 gate.output_connection.current_value = 0
             else:
                 gate.output_connection.current_value = input_values[0]
-                      
+        
+        gate.print_values()    
+        self.update_feed_forward_gates(gate.output_connection)
+    
+    def update_feed_forward_gates(self, connection):
+        gate = self.get_gate_by_input_connection(connection)
+        if gate != None:
+            self.feed_forward_gates.append(gate)
+            return
+        # fanout = self.get_gate_by_input_connection
+                  
     def get_the_end_result_test_vector(self):
         result = []
         for connection in self.input_connections:

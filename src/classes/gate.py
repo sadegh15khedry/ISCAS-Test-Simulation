@@ -251,6 +251,11 @@ class Gate:
             self.level = max_input_level + 1
             self.output_connection.set_level(max_input_level + 1)
 
+    def print_values(self):
+        print(f"Gate:{self.id} type:{self.gate_type}")
+        for input_connection in self.input_connections:
+            print(f"    input:{input_connection.name}, value:{input_connection.current_value}")
+        print(f"    output:{self.output_connection.current_value}")
     def draw(self):
         input_names = [f"{conn.name} (ID: {conn.id})" for conn in self.input_connections]
         output_name = f"{self.output_connection.name} (ID: {self.output_connection.id})" if self.output_connection else "None"
