@@ -66,8 +66,80 @@ class Circuit:
             print (f"backtracking gate:{gate.id}, input:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == "D'":
             for input in gate.input_connections:
-                input.current_value = 1 
-    
+                input.current_value = 1
+                
+        elif gate.gate_type == 'and' and gate.output_connection.current_value == 'D':
+            for input in gate.input_connections:
+                input.current_value = 1
+        elif gate.gate_type == 'and' and gate.output_connection.current_value == "D'":
+            min_c0_connection = None
+            min_c0 = 10**100
+            for connection in gate.input_connections:
+                if connection.controlability_to_zero < min_c0:
+                    min_c0_connection = connection
+                    min_c0 = connection.controlability_to_zero      
+            min_c0_connection.current_value = 0
+            
+        elif gate.gate_type == 'or' and gate.output_connection.current_value == 'D':
+            min_c1_connection = None
+            min_c1 = 10**100
+            for connection in gate.input_connections:
+                if connection.controlability_to_zero < min_c1:
+                    min_c1_connection = connection
+                    min_c1 = connection.controlability_to_one     
+            min_c1_connection.current_value = 1
+        elif gate.gate_type == 'or' and gate.output_connection.current_value == "D'":
+            for input in gate.input_connections:
+                input.current_value = 0
+                
+        elif gate.gate_type == 'nor' and gate.output_connection.current_value == 'D':
+            for input in gate.input_connections:
+                input.current_value = 0
+            
+        elif gate.gate_type == 'nor' and gate.output_connection.current_value == "D'":
+            min_c1_connection = None
+            min_c1 = 10**100
+            for connection in gate.input_connections:
+                if connection.controlability_to_zero < min_c1:
+                    min_c1_connection = connection
+                    min_c1 = connection.controlability_to_one     
+            min_c1_connection.current_value = 1
+            
+        elif (gate.gate_type == 'not' and gate.output_connection.current_value == "D'") or  (gate.gate_type == 'buf' and gate.output_connection.current_value == "D"):
+            for input in gate.input_connections:
+                input.current_value = 1
+        
+        elif (gate.gate_type == 'not' and gate.output_connection.current_value == "D" ) or  (gate.gate_type == 'buf' and gate.output_connection.current_value == "D'"):
+            for input in gate.input_connections:
+                input.current_value = 0 
+
+        elif gate.gate_type == 'xor' and gate.output_connection.current_value == "D":
+            # Ensure an odd number of inputs have value D or 1
+            for input in gate.input_connections:
+                input.current_value = 0
+            min_c1_connection = min(gate.input_connections, key=lambda x: x.controlability_to_one)
+            min_c1_connection.current_value = 'D'
+        elif gate.gate_type == 'xor' and gate.output_connection.current_value == "D'":
+            # Ensure an even number of inputs have value D' or 1
+            for input in gate.input_connections:
+                input.current_value = 0
+            min_c1_connection = min(gate.input_connections, key=lambda x: x.controlability_to_one)
+            min_c1_connection.current_value = "D'"
+        elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D":
+            # Ensure an even number of inputs have value D or 1
+            for input in gate.input_connections:
+                input.current_value = 1
+            min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
+            min_c0_connection.current_value = 0
+        elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D'":
+            # Ensure an odd number of inputs have value D' or 1
+            for input in gate.input_connections:
+                input.current_value = 1
+            min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
+            min_c0_connection.current_value = 0
+            
+            
+            
     def get_the_end_result_test_vector(self):
         result = []
         for connection in self.input_connections:
