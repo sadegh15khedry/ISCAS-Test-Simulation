@@ -126,11 +126,11 @@ class Circuit:
             min_c1_connection = min(gate.input_connections, key=lambda x: x.controlability_to_one)
             min_c1_connection.current_value = "D'"
         elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D":
-            # Ensure an even number of inputs have value D or 1
-            for input in gate.input_connections:
-                input.current_value = 1
-            min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
-            min_c0_connection.current_value = 0
+            # Fault activation condition: output should be 1.
+            # Set all inputs to 0 or all to 1.
+            if gate.output_connection.current_value == 'D':
+                for input in gate.input_connections:
+                    input.current_value = 0  # Set all inputs to 0
         elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D'":
             # Ensure an odd number of inputs have value D' or 1
             for input in gate.input_connections:
