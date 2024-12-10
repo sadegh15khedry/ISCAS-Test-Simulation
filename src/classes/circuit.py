@@ -101,6 +101,8 @@ class Circuit:
                     self.set_other_inputs(gate)
                     self.propagate(gate)
     
+    
+    #TODO Add fanout backtrace
     def backtrace_from_output(self, gate):
         if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
             min_c0_connection = None
@@ -246,8 +248,11 @@ class Circuit:
                 else:
                     self.assign_value_to_other_connection_in_forward(input_connection, 0)
                     # input_connection.current_value = 0
-     
-    def propagate(self, gate):
+    
+    
+    #TODO Add other gates propagation
+    #TODO Add fanout propagation  
+    def propagate(self, gate): 
         input_values = self.get_input_list(gate)
         if gate.output_connection.current_value in ['D', "D'"]:
             return
@@ -348,7 +353,6 @@ class Circuit:
             else:
                 gate.output_connection.current_value = input_values[0]
         
-    
     def assign_value_to_other_connection_in_forward(self, connection, value):
         if connection in self.input_connections:
             connection.current_value = value
