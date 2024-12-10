@@ -19,7 +19,9 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
         test_vectors = []
         
         for row in fault_input:
-            print(f"iteration:{row_count}---------------------------------------")
+            print("")
+            print("")
+            print(f"fault_id:{row_count}----------------------------------------------------------------------------------------------------------------------------")
             
             connection_name = row["connection"]
             stuck_at = row["stuck_at"]
@@ -31,9 +33,8 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             
             
             row_count += 1
-            print("-------------------------------------------------------")
             
-        print("-----------------------------------------------------------------")
+        print("--------------------------------------------------------------------------------------------------------------------------------------------------------")
         print("PODEM simulations finished")
         
         if test_vectors is not None:

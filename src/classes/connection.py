@@ -28,7 +28,7 @@ class Connection:
         self.history_id += 1
 
             
-    def print_output(self, time):
+    def print_output(self):
         print(f"output connection: {self.name}  value: {self.current_value}")
         
         
