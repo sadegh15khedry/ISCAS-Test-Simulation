@@ -57,13 +57,13 @@ class Circuit:
             elif self.podem_state == 'backward' and len(self.backward_gates) > 0:
                 gate = self.backward_gates.pop(0)
                 if gate is not None:
-                    print(f"backward gate is gate:{gate.id}")
+                    print(f"backward gate: {gate.id}")
                     self.backtrace_from_output(gate)
             
             elif self.podem_state == 'backward' and len(self.backward_gates) == 0:
                 print("finished backward and moving to forward")
                 self.update_all_gates_values()
-                self.update_d_frontier()
+                # self.update_d_frontier()
                 self.podem_state = 'forward'
                 self.pushed_forward = False
                 
@@ -195,6 +195,12 @@ class Circuit:
             min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
             min_c0_connection.current_value = 0
     
+        for input_connection in gate.input_connections:
+            if input_connection not in self.input_connections and input_connection.current_value in [0, 1, "D", "D'"]:
+                prev_gate = self.get_gate_by_output_connection(input_connection.name)
+                self.backward_gates.append(prev_gate)
+                print(f"Gate: {prev_gate.id} has been added to backward gate list")
+    
     def update_d_frontier(self):
         for gate in self.gates:
             for input in gate.input_connections:
@@ -208,8 +214,12 @@ class Circuit:
                 self.propagate(gate)
     
     def is_podem_over(self):
+        print(self.fault_connection.current_value)
+        print(f"justifyed:{self.is_all_values_justified}")
+        print(f"input:{self.has_assigned_values_to_inputs()}")
+        print(f"output:{self.has_fault_reached_outputs()}")
         
-        if self.is_all_values_justified == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True:
+        if self.is_all_values_justified == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True and self.podem_state != 'backward':
             return True
         return False
     
@@ -243,8 +253,9 @@ class Circuit:
      
     def propagate(self, gate):
         input_values = self.get_input_list(gate)
-
-        if gate.gate_type == 'nand':
+        if gate.output_connection.current_value in ['D', "D'"]:
+            return
+        elif gate.gate_type == 'nand':
             if 'D' in input_values and 0 not in input_values:
                 # If there's both a 1 and a D, output is D'
                 gate.output_connection.current_value = "D'"
