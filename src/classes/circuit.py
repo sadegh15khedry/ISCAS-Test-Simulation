@@ -62,7 +62,7 @@ class Circuit:
             
             elif self.podem_state == 'backward' and len(self.backward_gates) == 0:
                 print("finished backward and moving to forward")
-                self.update_all_gates_values()
+                # self.update_all_gates_values()
                 # self.update_d_frontier()
                 self.podem_state = 'forward'
                 self.pushed_forward = False
@@ -208,10 +208,6 @@ class Circuit:
                     if gate not in self.d_frontier:
                         self.d_frontier.append(gate)
     
-    def update_all_gates_values(self):
-        for level in range(self.max_gate_level + 1):
-            for gate in self.gates:
-                self.propagate(gate)
     
     def is_podem_over(self):
         print(self.fault_connection.current_value)
