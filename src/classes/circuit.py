@@ -17,6 +17,7 @@ class Circuit:
         self.target = None
         self.remaining_targets = []
         self.backward_gates = []
+        self.pushed_forward = False
         
     def run_podem(self):   
         test_vector = None
@@ -33,24 +34,28 @@ class Circuit:
     def iterative_podem(self):
         is_podem_over = self.is_podem_over()
         prev_gate = self.get_fault_previous_gate()
-        self.add_target(self.fault_connection, self.activation_value)
+        if self.fault_connection not in self.input_connections:
+            self.add_target(self.fault_connection, self.activation_value)
                 
         if prev_gate != None:
             self.backward_gates.append(prev_gate)
 
+        self.pushed_forward = False
         iteration_counter = 1
         while (is_podem_over == False and iteration_counter < 100):
             print(f"iteration: {iteration_counter}*************************************************")
-            if (len(self.remaining_targets) > 0):
+            print(f"State: {self.podem_state}")
+
+            if (len(self.remaining_targets) > 0 and self.podem_state == 'forward' and self.pushed_forward == True):
                 self.podem_state = 'backward'
                 self.target = self.remaining_targets.pop(0)
+                gate = self.get_gate_by_output_connection(self.target['connection_name'])
+                print(f"new Back Gate: {gate.id}")
+                self.backward_gates.append(gate)
                 print(f"New target has been set => connection:{self.target['connection_name']}, value:{self.target['value']}")
                 
-        
-                
-            if self.podem_state == 'backward' and len(self.backward_gates) > 0:
-                # print(len(self.backward_gates))
-                gate = self.backward_gates.pop()
+            elif self.podem_state == 'backward' and len(self.backward_gates) > 0:
+                gate = self.backward_gates.pop(0)
                 if gate is not None:
                     print(f"backward gate is gate:{gate.id}")
                     self.backtrace_from_output(gate)
@@ -60,10 +65,15 @@ class Circuit:
                 self.update_all_gates_values()
                 self.update_d_frontier()
                 self.podem_state = 'forward'
+                self.pushed_forward = False
                 
+            elif self.podem_state == 'forward' and self.pushed_forward == False:
+                print("moving forward")
+                self.pushed_forward = True
+                self.feed_forward_all_gates()    
                     
             #from forward to backward
-            elif len(self.remaining_targets) > 0 and self.podem_state == 'forward':
+            elif self.podem_state == 'forward' and len(self.remaining_targets) > 0:
                 target = self.remaining_targets[0]
                 print(f"target connection:{target['connection_name']}, target_value:{target['value']}")
                 output_connection = self.get_gate_by_output_connection_name(target['connection_name'])
@@ -71,14 +81,11 @@ class Circuit:
                 gate.output_connection.current_value = target['value']
                 self.backward_gates.append(gate)
                 self.podem_state = 'backward'
-            elif self.podem_state == 'forward':
-                print("moving forward")
-                self.feed_forward_all_gates()
-            # if self.check_if_target_reached() == True and len(self.remaining_targets) > 0:
-            #     target.remove(0)
+            
+            
             
             self.check_target()
-            self.update_d_frontier()
+            # self.update_d_frontier()
             iteration_counter += 1
             # self.print_d_frontier()
             is_podem_over = self.is_podem_over()
@@ -90,8 +97,9 @@ class Circuit:
     def feed_forward_all_gates(self):
         for level in range(self.max_gate_level + 1):
             for gate in self.gates:
-                self.set_other_inputs(gate)
-                self.propagate(gate)
+                if gate.level == level:
+                    self.set_other_inputs(gate)
+                    self.propagate(gate)
     
     def backtrace_from_output(self, gate):
         if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
@@ -206,7 +214,11 @@ class Circuit:
         return False
     
     def set_other_inputs(self, gate):
-        if gate.gate_type == 'nand' or gate.gate_type == 'and':
+        input_list = self.get_input_list(gate)
+        if ('D' not in input_list and "D'" not in input_list):
+            return
+                
+        elif gate.gate_type == 'nand' or gate.gate_type == 'and':
             for input_connection in gate.input_connections:
                 if (input_connection.current_value == 'D' or input_connection.current_value == "D'"):
                     continue
@@ -338,6 +350,9 @@ class Circuit:
             self.add_target(connection, value)
 
     def check_if_target_reached(self):
+        if self.target is None:
+            return True
+        
         for connection in self.input_connections + self.net_connections + self.output_connections:
             if connection.name == self.target['connection_name'] and connection.current_value == self.target['value']:
                 return True
@@ -346,19 +361,21 @@ class Circuit:
         return False
 
     def add_target(self, connection, value):
-        target = {"connection_name":connection.name, "value":value}
+        target = {"connection_name":connection.name, "value":value, "attempted":False}
         self.remaining_targets.append(target)
     
     def check_target(self):
+        if self.target is None:
+            return True
+        
         if (self.target is None or self.check_if_target_reached() == True) and len(self.remaining_targets) > 0 :
             self.target = None
-            print("target reached")
+            # print("target reached")
             # self.target = self.remaining_targets.pop(0)
         elif self.check_if_target_reached() == True and len(self.target) == 0 :
             print("All targets reached")
         # print(f"Target_connection:{self.target['connection_name']} Target_value:{self.target['value']}")
                     
-            
     def get_gate_by_output_connection_name(self, name):
         for connection in self.input_connections + self.net_connections + self.output_connections:
              if connection.name == name:
@@ -402,10 +419,11 @@ class Circuit:
                 if input == gate_input_connection:
                     return gate
     
-    def get_gate_by_output_connection(self, gate_output_connection):
+    def get_gate_by_output_connection(self, gate_output_connection_name):
         for gate in self.gates:
-            if gate.output_connection == gate_output_connection:
+            if gate.output_connection.name == gate_output_connection_name:
                 return gate
+        print("no gate found")
     
     def get_fault_previous_gate(self):
         for gate in self.gates:
