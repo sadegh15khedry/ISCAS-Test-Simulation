@@ -345,7 +345,15 @@ class Circuit:
         if gate.output_connection.current_value in ['D', "D'"]:
             return
         elif gate.gate_type == 'nand':
-            if 'D' in input_values and 0 not in input_values and 'U' not in input_values:
+            if len(input_values) == 2 and input_values[0] == 'D' and input_values[1] == 'D':
+                gate.output_connection.current_value = "D'"
+            elif len(input_values) == 2 and input_values[0] == "D'" and input_values[1] == "D'":
+                gate.output_connection.current_value = 'D'
+                
+            elif len(input_values) == 2 and "D" in input_values and "D'" in input_values:
+                gate.output_connection.current_value = 1
+            
+            elif 'D' in input_values and 0 not in input_values and 'U' not in input_values:
                 # If there's both a 1 and a D, output is D'
                 gate.output_connection.current_value = "D'"
             elif "D'" in input_values and 0 not in input_values and 'U' not in input_values:
