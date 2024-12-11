@@ -212,10 +212,10 @@ class Circuit:
     
     
     def is_podem_over(self):
-        print(self.fault_connection.current_value)
-        print(f"justifyed:{self.is_all_values_justified}")
-        print(f"input:{self.has_assigned_values_to_inputs()}")
-        print(f"output:{self.has_fault_reached_outputs()}")
+        # print(self.fault_connection.current_value)
+        # print(f"justifyed:{self.is_all_values_justified}")
+        # print(f"input:{self.has_assigned_values_to_inputs()}")
+        # print(f"output:{self.has_fault_reached_outputs()}")
         
         if self.is_all_values_justified == True and self.has_assigned_values_to_inputs() == True and self.has_fault_reached_outputs() == True and self.podem_state != 'backward':
             return True
@@ -250,57 +250,56 @@ class Circuit:
                     # input_connection.current_value = 0
     
     
-    #TODO Add other gates propagation
     #TODO Add fanout propagation  
     def propagate(self, gate): 
         input_values = self.get_input_list(gate)
         if gate.output_connection.current_value in ['D', "D'"]:
             return
         elif gate.gate_type == 'nand':
-            if 'D' in input_values and 0 not in input_values:
+            if 'D' in input_values and 0 not in input_values and 'U' not in input_values:
                 # If there's both a 1 and a D, output is D'
                 gate.output_connection.current_value = "D'"
-            elif "D'" in input_values and 0 not in input_values:
+            elif "D'" in input_values and 0 not in input_values and 'U' not in input_values:
                 # If there's both a 1 and a D', output is D
                 gate.output_connection.current_value = 'D'
-            elif all(value == 1 for value in input_values):
+            elif all(value == 1 for value in input_values) :
                 # If all inputs are 1, output is 0 for NAND
                 gate.output_connection.current_value = 0
-            else:
+            elif any(value == 0 for value in input_values):
                 # Otherwise, output is 1
                 gate.output_connection.current_value = 1
 
-        elif gate.gate_type == 'and'and 0 not in input_values:
-            if 'D' in input_values:
+        elif gate.gate_type == 'and':
+            if 'D' in input_values and 0 not in input_values and 'U' not in input_values:
                 # If any input is D, output is D
                 gate.output_connection.current_value = 'D'
-            elif "D'" in input_values and 0 not in input_values:
+            elif "D'" in input_values and 0 not in input_values and 'U' not in input_values:
                 # If any input is D', output is D'
                 gate.output_connection.current_value = "D'"
             elif all(value == 1 for value in input_values):
                 # If all inputs are 1, output is 1 for AND
                 gate.output_connection.current_value = 1
-            else:
-                # Otherwise, output is 0
+            elif any(value == 0 for value in input_values):
                 gate.output_connection.current_value = 0
+        
         elif gate.gate_type == 'or':
-            if 'D' in input_values:
+            if 'D' in input_values and 1 not in input_values and 'U' not in input_values:
                 gate.output_connection.current_value = 'D'
-            elif "D'" in input_values:
+            elif "D'" in input_values and 1 not in input_values and 'U' not in input_values:
                 gate.output_connection.current_value = "D'"
             elif any(value == 1 for value in input_values):
                 gate.output_connection.current_value = 1
-            else:
+            elif all(value == 0 for value in input_values):
                 gate.output_connection.current_value = 0
 
         elif gate.gate_type == 'nor':
-            if 'D' in input_values:
+            if 'D' in input_values and 1 not in input_values and 'U' not in input_values:
                 gate.output_connection.current_value = "D'"
-            elif "D'" in input_values:
+            elif "D'" in input_values and 1 not in input_values and 'U' not in input_values:
                 gate.output_connection.current_value = 'D'
             elif any(value == 1 for value in input_values):
                 gate.output_connection.current_value = 0
-            else:
+            elif all(value == 0 for value in input_values):
                 gate.output_connection.current_value = 1
 
         elif gate.gate_type == 'xor':
@@ -313,7 +312,7 @@ class Circuit:
                 gate.output_connection.current_value = "D'"
             elif sum(value == 1 for value in input_values) % 2 == 1:
                 gate.output_connection.current_value = 1
-            else:
+            elif sum(value == 1 for value in input_values) % 2 == 0:
                 gate.output_connection.current_value = 0
 
         elif gate.gate_type == 'xnor':
@@ -326,7 +325,7 @@ class Circuit:
                 gate.output_connection.current_value = "D'"
             elif sum(value == 1 for value in input_values) % 2 == 0:
                 gate.output_connection.current_value = 1
-            else:
+            elif sum(value == 1 for value in input_values) % 2 == 1:
                 gate.output_connection.current_value = 0
 
         elif gate.gate_type == 'not':
@@ -338,7 +337,7 @@ class Circuit:
                 gate.output_connection.current_value = 0
             elif input_values[0] == 0:
                 gate.output_connection.current_value = 1
-            else:
+            elif input_values[0] != 1 and input_values[0] != 0:
                 gate.output_connection.current_value = 1 if input_values[0] == 0 else 0
 
         elif gate.gate_type == 'buf':
@@ -350,13 +349,16 @@ class Circuit:
                 gate.output_connection.current_value = 1
             elif input_values[0] == 0:
                 gate.output_connection.current_value = 0
-            else:
+            elif input_values[0] != 1 and input_values[0] != 0:
                 gate.output_connection.current_value = input_values[0]
+        
+        if gate.output_connection.current_value != 'U':
+            print(f"assigned output_connection: {gate.output_connection.name}, value:{gate.output_connection.current_value}:")
         
     def assign_value_to_other_connection_in_forward(self, connection, value):
         if connection in self.input_connections:
             connection.current_value = value
-            print(f"Connection: {connection.name}, got the value:{connection.current_value}")
+            print(f"Connection: {connection.name}, value:{connection.current_value}")
         else:
             self.add_target(connection, value)
 
@@ -374,6 +376,8 @@ class Circuit:
     def add_target(self, connection, value):
         target = {"connection_name":connection.name, "value":value, "attempted":False}
         self.remaining_targets.append(target)
+        print(f"Target added: Connection: {target['connection_name']}, value:{target['value']}")
+        
     
     def check_target(self):
         if self.target is None:
