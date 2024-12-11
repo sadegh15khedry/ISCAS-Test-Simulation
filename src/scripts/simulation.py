@@ -5,20 +5,25 @@ from io_file_work import load_csv_file, generate_input_file, load_fault_file, sa
 
 def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, test_vectors_path, delay_consideration, max_iterations, input_file_generation):
     
-    circuit = parse_iscas(circuit_path)
-    circuit.initialize_net_connections()
-    circuit.set_levels()
-    circuit.set_controlability()
-    circuit.set_observability()
-    circuit.draw_circuit()
+    
     
     if (simulation_type == "PODEM"):
+        
+        
         print("PODEM simulations started")
         row_count = 1
         fault_input = load_fault_file(fault_input_path)
         test_vectors = []
         
         for row in fault_input:
+            circuit = parse_iscas(circuit_path)
+            circuit.initialize_net_connections()
+            circuit.set_levels()
+            circuit.set_controlability()
+            circuit.set_observability()
+            if row_count == 1:
+                circuit.draw_circuit()
+        
             print("")
             print("")
             print(f"fault_id:{row_count}----------------------------------------------------------------------------------------------------------------------------")
@@ -29,7 +34,7 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             test_vector = circuit.run_podem()
             test_vectors.append(test_vector)
             print(f"test_vector: {test_vector}")
-            circuit.clear_faulty_circuit()
+            # circuit.clear_faulty_circuit()
             
             
             row_count += 1
@@ -41,6 +46,13 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             save_test_vectors(test_vectors, test_vectors_path)
     
     elif(simulation_type == 'true_value'):
+        circuit = parse_iscas(circuit_path)
+        circuit.initialize_net_connections()
+        circuit.set_levels()
+        circuit.set_controlability()
+        circuit.set_observability()
+        circuit.draw_circuit()
+    
         input_file = load_csv_file(inputs_path)
         if(input_file is None and input_file_generation == True):
             generate_input_file(circuit, inputs_path)
