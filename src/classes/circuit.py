@@ -44,7 +44,7 @@ class Circuit:
 
         self.pushed_forward = False
         iteration_counter = 1
-        while (is_podem_over == False and iteration_counter < 10):
+        while (is_podem_over == False and iteration_counter < 20):
             print(f"iteration: {iteration_counter}*************************************************")
             print(f"State: {self.podem_state}")
 
@@ -60,6 +60,9 @@ class Circuit:
                 
 
             if self.podem_state == 'forward' and self.pushed_forward == True:
+                if len(self.remaining_targets) > 0:
+                    self.target = self.remaining_targets.pop(0)
+
                 # print(f"target connection:{self.target['connection_name']}, target_value:{self.target['value']}")
                 output_connection = self.get_gate_by_output_connection_name(self.target['connection_name'])
                 
@@ -70,7 +73,7 @@ class Circuit:
                     self.backward_list.append(gate)
             
                 elif fanout is not None:
-                    print("moving to back with a fanout")
+                    print("moving to backward with a fanout")
                     for output in fanout.output_connections:
                         if output.name == self.target['connection_name']:
                             output.current_value = self.target['value']
@@ -98,18 +101,36 @@ class Circuit:
                 if isinstance(back_item, Gate) == True:
                     print(f"backward gate: {back_item.id}")
                     self.backtrace_gate_from_output(back_item)
+                    
+                    #Adding next back item
+                    for input_connection in gate.input_connections:
+                        gate = self.get_gate_by_output_connection(input_connection.name)
+                        fanout = self.get_fanout_by_output_connection(input_connection.name)
+                        if input_connection.current_value != 'U' and gate is not None:
+                            self.backward_list.append(gate)
+                        elif input_connection.current_value != 'U' and fanout is not None:
+                            self.backward_list.append(fanout)
+                
                 elif isinstance(back_item, Fanout) == True:
                     print(f"backward fanout: {back_item.id}")
                     self.backtrace_fanout_from_output(back_item)
+                    
+                    #Adding next back item
+                    gate = self.get_gate_by_output_connection(back_item.input_connection.name)
+                    fanout = self.get_fanout_by_output_connection(back_item.input_connection.name)
+                    if back_item.input_connection != 'U' and gate is not None:
+                        self.backward_list.append(gate)
+                    elif back_item.input_connection != 'U' and fanout is not None:
+                        self.backward_list.append(fanout)
+                        
             
             
             
-            
-            #from backward to forward           
+            #from backward to forward          
             elif self.podem_state == 'backward' and len(self.backward_list) == 0:
                 print("finished backward and moving to forward")
-                if len(self.remaining_targets) > 0:
-                    self.target = self.remaining_targets.pop(0)
+                # if len(self.remaining_targets) > 0:
+                #     self.target = self.remaining_targets.pop(0)
                 self.podem_state = 'forward'
                 self.pushed_forward = False
                 
@@ -155,10 +176,12 @@ class Circuit:
                     min_c0_connection = connection
                     min_c0 = connection.controlability_to_zero      
             min_c0_connection.current_value = 0
-            print (f"backtracking gate:{gate.id}, input:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
+            print (f"Connection:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == "D'":
             for input in gate.input_connections:
                 input.current_value = 1
+                print(f"Connection:{gate.id}, input:{input.name}  assigned_value:{input.current_value}")
+                
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == 1:
             min_c0_connection = None
             min_c0 = 10**100
@@ -167,6 +190,8 @@ class Circuit:
                     min_c0_connection = connection
                     min_c0 = connection.controlability_to_zero      
             min_c0_connection.current_value = 0
+            print (f"Connection:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
+            
         
         
                 
@@ -240,28 +265,33 @@ class Circuit:
             min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
             min_c0_connection.current_value = 0
     
-        for input_connection in gate.input_connections:
-            if input_connection not in self.input_connections and input_connection.current_value in [0, 1, "D", "D'"]:
-                prev_gate = self.get_gate_by_output_connection(input_connection.name)
-                self.backward_list.append(prev_gate)
-                print(f"Gate: {prev_gate.id} has been added to backward gate list")
+        # for input_connection in gate.input_connections:
+        #     if input_connection not in self.input_connections and input_connection.current_value in [0, 1, "D", "D'"]:
+        #         prev_gate = self.get_gate_by_output_connection(input_connection.name)
+        #         self.backward_list.append(prev_gate)
+        #         print(f"Gate: {prev_gate.id} has been added to backward gate list")
     
     def backtrace_fanout_from_output(self, fanout):
         output_list = []
         for output_connection in fanout.output_connections:
             output_list.append(output_connection.current_value)
-        print("assigning values to fanout")
         print(f"Fanout: {fanout.id}")
         for output in fanout.output_connections:
             print(f"output: {output.current_value}")
         
         
         if  ('D' in output_list or 1 in output_list) and 0 not in output_list and "D'" not in output_list:
-            fanout.input_connection.current_value = 1
-            print(f"new assignment Connection: {fanout.input_connection.name} value:{fanout.input_connection.current_value}")
+            if fanout.input_connection.current_value == 1:
+                return
+            else:
+                fanout.input_connection.current_value = 1
+                print(f"new assignment Connection: {fanout.input_connection.name} value:{fanout.input_connection.current_value}")
         elif ("D'" in output_list or 0 in output_list) and 1 not in output_list and 'D' not in output_list:
-            fanout.input_connection.current_value = 0
-            print(f"new assignment Connection: {fanout.input_connection.name} value:{fanout.input_connection.current_value}")
+            if fanout.input_connection.current_value == 0:
+                return
+            else:
+                fanout.input_connection.current_value = 0
+                print(f"new assignment Connection: {fanout.input_connection.name} value:{fanout.input_connection.current_value}")
             
     def update_d_frontier(self):
         for gate in self.gates:
@@ -505,7 +535,7 @@ class Circuit:
             for output_connection in fanout.output_connections:
                 if output_connection.name == connection_name:
                     return fanout
-        print("no gate found")
+        # print("no gate found")
     
     def get_fault_previous_gate(self):
         for gate in self.gates:
@@ -644,8 +674,9 @@ class Circuit:
         if fanout.input_connection.current_value == 'U':
             return
         for output_connection in fanout.output_connections:
-            output_connection.current_value = fanout.input_connection.current_value
-            print(f"fanout forward output connection:{output_connection.name}, value:{output_connection.current_value}")
+            if output_connection.current_value != fanout.input_connection.current_value:
+                output_connection.current_value = fanout.input_connection.current_value
+                print(f"fanout forward output connection:{output_connection.name}, value:{output_connection.current_value}")
                     
     def pass_values_to_output(self, time, delay_consideration):
         self.set_max_gate_level()
