@@ -66,8 +66,8 @@ class Circuit:
                 # print(f"target connection:{self.target['connection_name']}, target_value:{self.target['value']}")
                 output_connection = self.get_gate_by_output_connection_name(self.target['connection_name'])
                 
-                gate = self.get_gate_by_output_connection(output_connection)
-                fanout = self.get_fanout_by_output_connection(self.target['connection_name'])
+                gate = self.get_gate_by_output_connection(output_connection.name)
+                fanout = self.get_fanout_by_output_connection(output_connection.name)
                 if gate is not None:
                     gate.output_connection.current_value = self.target['value']
                     self.backward_list.append(gate)
@@ -103,7 +103,7 @@ class Circuit:
                     self.backtrace_gate_from_output(back_item)
                     
                     #Adding next back item
-                    for input_connection in gate.input_connections:
+                    for input_connection in back_item.input_connections:
                         gate = self.get_gate_by_output_connection(input_connection.name)
                         fanout = self.get_fanout_by_output_connection(input_connection.name)
                         if input_connection.current_value != 'U' and gate is not None:
