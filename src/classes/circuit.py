@@ -203,8 +203,7 @@ class Circuit:
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == "D'":
             for input in gate.input_connections:
                 input.current_value = 1
-                print(f"Connection:{input.name}  assigned_value:{input.current_value}")
-                
+                print(f"Connection:{input.name}  assigned_value:{input.current_value}")        
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == 1:
             min_c0_connection = None
             min_c0 = 10**100
@@ -213,18 +212,17 @@ class Circuit:
                     min_c0_connection = connection
                     min_c0 = connection.controlability_to_zero      
             min_c0_connection.current_value = 0
-            print (f"Connection:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")
-            
+            print (f"Connection:{min_c0_connection.name}  assigned_value:{min_c0_connection.current_value}")          
         elif gate.gate_type == 'nand' and gate.output_connection.current_value == 0:
             for connection in gate.input_connections:
                 connection.current_value = 1
                 print (f"Connection:{connection.name}  assigned_value:{connection.current_value}")
         
                 
-        elif gate.gate_type == 'and' and gate.output_connection.current_value == 'D':
+        elif gate.gate_type == 'and' and (gate.output_connection.current_value == 'D' or gate.output_connection.current_value == 1):
             for input in gate.input_connections:
                 input.current_value = 1
-        elif gate.gate_type == 'and' and gate.output_connection.current_value == "D'":
+        elif gate.gate_type == 'and' and (gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0):
             min_c0_connection = None
             min_c0 = 10**100
             for connection in gate.input_connections:
@@ -232,8 +230,9 @@ class Circuit:
                     min_c0_connection = connection
                     min_c0 = connection.controlability_to_zero      
             min_c0_connection.current_value = 0
-            
-        elif gate.gate_type == 'or' and gate.output_connection.current_value == 'D':
+        
+        
+        elif gate.gate_type == 'or' and (gate.output_connection.current_value == 'D' or gate.output_connection.current_value == 1):
             min_c1_connection = None
             min_c1 = 10**100
             for connection in gate.input_connections:
@@ -241,15 +240,15 @@ class Circuit:
                     min_c1_connection = connection
                     min_c1 = connection.controlability_to_one     
             min_c1_connection.current_value = 1
-        elif gate.gate_type == 'or' and gate.output_connection.current_value == "D'":
+        elif gate.gate_type == 'or' and (gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0):
             for input in gate.input_connections:
                 input.current_value = 0
+             
                 
-        elif gate.gate_type == 'nor' and gate.output_connection.current_value == 'D':
+        elif gate.gate_type == 'nor' and (gate.output_connection.current_value == 'D' or gate.output_connection.current_value == 1):
             for input in gate.input_connections:
                 input.current_value = 0
-            
-        elif gate.gate_type == 'nor' and gate.output_connection.current_value == "D'":
+        elif gate.gate_type == 'nor' and (gate.output_connection.current_value == "D'" or gate.output_connection.current == 0):
             min_c1_connection = None
             min_c1 = 10**100
             for connection in gate.input_connections:
@@ -258,44 +257,48 @@ class Circuit:
                     min_c1 = connection.controlability_to_one     
             min_c1_connection.current_value = 1
             
-        elif (gate.gate_type == 'not' and gate.output_connection.current_value == "D'") or  (gate.gate_type == 'buf' and gate.output_connection.current_value == "D"):
+        
+        elif gate.gate_type == 'not' and (gate.output_connection.current_value == "D" or gate.output_connection.current_value == 1):
+            for input in gate.input_connections:
+                input.current_value = 0
+        elif gate.gate_type == 'not' and (gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0) :
             for input in gate.input_connections:
                 input.current_value = 1
         
-        elif (gate.gate_type == 'not' and gate.output_connection.current_value == "D" ) or  (gate.gate_type == 'buf' and gate.output_connection.current_value == "D'"):
+
+        elif gate.gate_type == 'buf' and (gate.output_connection.current_value == "D" or gate.output_connection.current_value == 1):
+            for input in gate.input_connections:
+                input.current_value = 1
+        elif gate.gate_type == 'buf' and (gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0):
             for input in gate.input_connections:
                 input.current_value = 0 
 
-        elif gate.gate_type == 'xor' and gate.output_connection.current_value == "D":
+        
+        elif gate.gate_type == 'xor' and (gate.output_connection.current_value == 'D' or gate.output_connection.current_value == 1):
             # Ensure an odd number of inputs have value D or 1
             for input in gate.input_connections:
                 input.current_value = 0
             min_c1_connection = min(gate.input_connections, key=lambda x: x.controlability_to_one)
             min_c1_connection.current_value = 'D'
-        elif gate.gate_type == 'xor' and gate.output_connection.current_value == "D'":
+        elif gate.gate_type == 'xor' and gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0:
             # Ensure an even number of inputs have value D' or 1
             for input in gate.input_connections:
                 input.current_value = 0
             min_c1_connection = min(gate.input_connections, key=lambda x: x.controlability_to_one)
             min_c1_connection.current_value = "D'"
-        elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D":
+        
+        
+        elif gate.gate_type == 'xnor' and (gate.output_connection.current_value == 'D' or gate.output_connection.current_value == 1):
             # Fault activation condition: output should be 1.
             # Set all inputs to 0 or all to 1.
             if gate.output_connection.current_value == 'D':
                 for input in gate.input_connections:
                     input.current_value = 0  # Set all inputs to 0
-        elif gate.gate_type == 'xnor' and gate.output_connection.current_value == "D'":
-            # Ensure an odd number of inputs have value D' or 1
+        elif gate.gate_type == 'xnor' and (gate.output_connection.current_value == "D'" or gate.output_connection.current_value == 0):
             for input in gate.input_connections:
                 input.current_value = 1
             min_c0_connection = min(gate.input_connections, key=lambda x: x.controlability_to_zero)
             min_c0_connection.current_value = 0
-    
-        # for input_connection in gate.input_connections:
-        #     if input_connection not in self.input_connections and input_connection.current_value in [0, 1, "D", "D'"]:
-        #         prev_gate = self.get_gate_by_output_connection(input_connection.name)
-        #         self.backward_list.append(prev_gate)
-        #         print(f"Gate: {prev_gate.id} has been added to backward gate list")
     
     def backtrace_fanout_from_output(self, fanout):
         output_list = []
@@ -502,18 +505,6 @@ class Circuit:
         print(f"Target added: Connection: {target['connection_name']}, value:{target['value']}")
         if self.target is None:
             self.target = self.remaining_targets.pop(0)
-        
-    # def check_target(self):
-    #     if self.target is None:
-    #         return True
-        
-    #     if (self.target is None or self.check_if_target_reached() == True) and len(self.remaining_targets) > 0 :
-    #         self.target = None
-    #         # print("target reached")
-    #         # self.target = self.remaining_targets.pop(0)
-    #     elif self.check_if_target_reached() == True and len(self.target) == 0 :
-    #         print("All targets reached")
-    #     # print(f"Target_connection:{self.target['connection_name']} Target_value:{self.target['value']}")
                     
     def get_gate_by_output_connection_name(self, name):
         for connection in self.input_connections + self.net_connections + self.output_connections:
