@@ -27,8 +27,7 @@ class Circuit:
         #     self.podem_state = 'forward' 
         # else:
         #     self.podem_state = 'backward'
-        print(f"Target: {self.target}")
-        print(f"remaining_targets: {self.remaining_targets}")
+        
         
         self.podem_state = 'backward'    
         print(f"initial state: {self.podem_state}")
@@ -39,26 +38,33 @@ class Circuit:
     def iterative_podem(self):
         is_podem_over = False
         prev_gate = self.get_fault_previous_gate()
+        prev_fanout = self.get_fault_previous_fanout()
         if self.fault_connection not in self.input_connections:
             self.add_target(self.fault_connection, self.activation_value)
                 
         if prev_gate != None:
             self.backward_list.append(prev_gate)
+        elif prev_fanout != None:
+            self.backward_list.append(prev_fanout)
+            print(f"init back fanout: {prev_fanout.id}")
 
+
+        
         self.pushed_forward = False
         iteration_counter = 1
-        while (is_podem_over == False and iteration_counter < 100):
+        while (is_podem_over == False and iteration_counter < 50):
             print(f"iteration: {iteration_counter}*************************************************")
             print(f"State: {self.podem_state}")
+            print(f"back_list size:{len(self.backward_list)}")
 
             for back_item in self.backward_list:
                 if isinstance(back_item, Gate) == True:
                     print(f"back gate: {back_item.id}")
                 elif isinstance(back_item, Fanout) == True:
                     print(f"back fanout: {back_item.id}")
+            # break
             print(f"Target: {self.target}")
             print(f"remaining_targets: {self.remaining_targets}")
-            # break
             
             print()
             for connection in self.input_connections:
@@ -569,7 +575,13 @@ class Circuit:
         for gate in self.gates:
             if gate.output_connection == self.fault_connection:
                 return gate
-            
+     
+    def get_fault_previous_fanout(self):
+        for fanout in self.fanouts:
+            for output_connection in fanout.output_connections:
+                if output_connection == self.fault_connection:
+                    return fanout
+                
     def set_stuck_at_fault(self, connection_name, stuck_at):
         done = False
         for connection in self.input_connections + self.net_connections + self.output_connections:
@@ -702,8 +714,11 @@ class Circuit:
             return
         for output_connection in fanout.output_connections:
             if output_connection.current_value != fanout.input_connection.current_value:
-                output_connection.current_value = fanout.input_connection.current_value
-                print(f"fanout forward output connection:{output_connection.name}, value:{output_connection.current_value}")
+                if (output_connection.current_value == 'D'and fanout.input_connection.current_value == 1) or output_connection.current_value == "D'" and fanout.input_connection.current_value == 0:
+                    continue
+                else:
+                    output_connection.current_value = fanout.input_connection.current_value
+                    print(f"fanout forward output connection:{output_connection.name}, value:{output_connection.current_value}")
                     
     def pass_values_to_output(self, time, delay_consideration):
         self.set_max_gate_level()
