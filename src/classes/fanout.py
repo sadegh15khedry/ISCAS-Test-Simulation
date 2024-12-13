@@ -18,6 +18,7 @@ class Fanout:
     def pass_values(self, time):
         for connection in self.output_connections:
             connection.update_value(self.input_connection.current_value ,time)
+    
     def set_controlability(self):
         if self.input_connection.controlability_to_zero is not None and self.input_connection.controlability_to_one is not None:
             for connection in self.output_connections:

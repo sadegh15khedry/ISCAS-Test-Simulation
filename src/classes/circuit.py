@@ -39,6 +39,7 @@ class Circuit:
         is_podem_over = False
         prev_gate = self.get_fault_previous_gate()
         prev_fanout = self.get_fault_previous_fanout()
+        
         if self.fault_connection not in self.input_connections:
             self.add_target(self.fault_connection, self.activation_value)
                 
@@ -189,7 +190,6 @@ class Circuit:
             for fanout in self.fanouts:
                 self.propagate_fanout(fanout)
             
-    #TODO complete other gates backward logic
     def backtrace_gate_from_output(self, gate):
         if gate.gate_type == 'nand' and gate.output_connection.current_value == 'D':
             min_c0_connection = None

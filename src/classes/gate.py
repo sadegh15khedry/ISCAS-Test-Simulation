@@ -441,7 +441,6 @@ class Gate:
     def can_set_controlability(self):
         return all(conn.controlability_to_one is not None and conn.controlability_to_zero is not None for conn in self.input_connections)
 
-
     def can_set_observability(self):
         return self.output_connection.observability is not None
 

@@ -21,6 +21,7 @@ def simulation(simulation_type, circuit_path, inputs_path, fault_input_path, tes
             circuit.set_levels()
             circuit.set_controlability()
             circuit.set_observability()
+            
             if row_count == 1:
                 circuit.draw_circuit()
         
