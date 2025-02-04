@@ -720,10 +720,12 @@ class Circuit:
             # print(f"Level {level} started:\n")
             for gate in self.gates:
                 if gate.level == level:
+                    # print(f"Pass Gate output: {gate.output_connection.name}")
                     gate.pass_values(time, delay_consideration)
             
             for fanout in self.fanouts:
                 fanout.pass_values(time)        
+
 
     def check_delays(self):
         for gate in self.gates:

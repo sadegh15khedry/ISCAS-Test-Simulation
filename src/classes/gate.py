@@ -399,23 +399,25 @@ class Gate:
     def get_inputs_without_delay(self, time):
         inputs = []
         for connection in self.input_connections:
-            if connection.current_value in ['1', '0', 'D', 'D\'']:
-                if connection.current_value in ['1', '0']:
-                    value = int(connection.current_value)
-                else:
-                    value = connection.current_value
-                inputs.append(value)
+            if connection.current_value in ['1', '0', 1, 0]:
+                value = int(connection.current_value)
             else:
-                inputs.append('U')
+                value = 'U'
+                
+            inputs.append(value)
+            
         return inputs
 
     def pass_values(self, time, delay_consideration):
         if delay_consideration:
+            # print("with delay")
             inputs = self.get_inputs_with_delay(time)
         else:
+            # print("without delay")
             inputs = self.get_inputs_without_delay(time)
 
         output = None
+        # print(f"inputs:{inputs}")
         if self.gate_type == 'and':
             output = self.get_and_gate_output(inputs)
         elif self.gate_type == 'nand':
